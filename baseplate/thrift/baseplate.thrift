@@ -18,3 +18,37 @@ service BaseplateService {
     */
     bool is_healthy(),
 }
+
+struct ClientId {
+  1: string name
+}
+
+struct RequestContext {
+  1: binary key,
+  2: binary value
+}
+
+struct Delegation {
+  1: string src
+  2: string dst
+}
+
+struct RequestHeader {
+  1: i64 trace_id,
+  2: i64 span_id,
+  3: optional i64 parent_span_id,
+  5: optional bool sampled,
+  6: optional ClientId client_id,
+  7: optional i64 flags,
+  8: list<RequestContext> contexts,
+
+  // Support for destination (partially resolved names) and delegation tables.
+  9: optional string dest,
+  10: optional list<Delegation> delegations,
+}
+
+struct ConnectionOptions {
+}
+
+struct UpgradeReply {
+}

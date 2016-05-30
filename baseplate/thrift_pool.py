@@ -14,11 +14,10 @@ import logging
 import socket
 import time
 
-from thrift.protocol import THeaderProtocol
-from thrift.protocol.TProtocol import TProtocolException
-from thrift.Thrift import TApplicationException
-from thrift.transport import TSocket
-from thrift.transport.TTransport import TTransportException
+from thriftpy.transport import TSocket, TTransportException, TBufferedTransportFactory
+from thriftpy.protocol import TBinaryProtocol
+from thriftpy.protocol.exc import TProtocolException
+from thriftpy.thrift import TApplicationException
 
 from ._compat import queue
 from .retry import RetryPolicy
@@ -27,14 +26,20 @@ from .retry import RetryPolicy
 logger = logging.getLogger(__name__)
 
 
-def _make_protocol(endpoint):
+def _make_protocol(endpoint, timeout):
+    kwargs = {
+        "socket_timeout": timeout * 1000.,
+        "connect_timeout": timeout * 1000.,
+    }
+
     if endpoint.family == socket.AF_INET:
-        trans = TSocket.TSocket(*endpoint.address)
+        trans = TSocket(*endpoint.address, **kwargs)
     elif endpoint.family == socket.AF_UNIX:
-        trans = TSocket.TSocket(unix_socket=endpoint.address)
+        trans = TSocket(unix_socket=endpoint.address, **kwargs)
     else:
         raise Exception("unsupported endpoint family %r" % endpoint.family)
-    return THeaderProtocol.THeaderProtocol(trans)
+    buffered_trans = TBufferedTransportFactory().get_transport(trans)
+    return TBinaryProtocol(buffered_trans)
 
 
 class ThriftConnectionPool(object):
@@ -82,8 +87,7 @@ class ThriftConnectionPool(object):
                     prot.trans.close()
                     prot = None
 
-            prot = _make_protocol(self.endpoint)
-            prot.trans.getTransport().setTimeout(self.timeout * 1000.)
+            prot = _make_protocol(self.endpoint, timeout=self.timeout)
 
             try:
                 prot.trans.open()
