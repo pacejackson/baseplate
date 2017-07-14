@@ -15,12 +15,6 @@ from ..context import ContextFactory
 logger = logging.getLogger(__name__)
 
 
-class OauthClient(object):
-
-    def __init__(self, id):
-        self.id = id
-
-
 class TargetingParams(object):
 
     def __init__(self, url_features=None, subreddit=None, subdomain=None,
@@ -66,6 +60,7 @@ class FeatureFlagsContextFactory(ContextFactory):
 
 
 class FeatureFlags(object):
+    """Access to feature flags with automatic config updates when changed."""
 
     def __init__(self, config_watcher):
         self._config_watcher = config_watcher
@@ -88,6 +83,18 @@ class FeatureFlags(object):
             return
 
     def enabled(self, name, user, targeting):
+        """ Check if the feature flag with the given name is enabled for the
+        provider user and targeting parameters.
+
+        :param str name: The name of the feature flag that you want to check.
+        :param baseplate.features.User user: Information about the user than
+            you want to check the feature state for.
+        :param baseplate.features.TargetingParams targeting: Request-specific
+            values that are used in determining if a feature flag should be
+            enabled.
+
+        :rtype: :py:class:`bool`
+        """
         config = self._get_config(name)
         if not config:
             return False
