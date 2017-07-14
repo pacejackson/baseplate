@@ -22,6 +22,7 @@ UrlComponents = namedtuple(
     ["params", "subdomain", "subreddit_name", "content_id", "content_type"],
 )
 
+
 def parse_url(url):
     subdomain = None
     subreddit = None
