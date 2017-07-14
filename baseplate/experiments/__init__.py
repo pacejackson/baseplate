@@ -69,12 +69,12 @@ class Experiments(object):
         experiment = experiment_from_config(config)
         variant = experiment.variant(user, content, targeting)
 
-        should_send_bucketing_event = experiment.should_log_bucketing()
+        should_log_bucketing_event = experiment.should_log_bucketing()
 
         if variant is None:
-            should_send_bucketing_event = False
+            should_log_bucketing_event = False
 
-        if should_send_bucketing_event:
+        if should_log_bucketing_event:
             self._log_bucketing_event(user, experiment, variant)
 
         return variant
