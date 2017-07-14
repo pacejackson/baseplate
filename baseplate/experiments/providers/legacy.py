@@ -36,7 +36,7 @@ class LegacyExperiment(ExperimentInterface):
         self.feature = feature
 
     @classmethod
-    def from_config(cls, owner, config):
+    def from_config(cls, id, name, owner, config):
         from ...features.feature import feature_flag_from_config
         if config.get('page'):
             experiment_type = "page"
@@ -60,8 +60,8 @@ class LegacyExperiment(ExperimentInterface):
         else:
             feature_flag = None
         return cls(
-            id=config["id"],
-            name=config["name"],
+            id=id,
+            name=name,
             owner=owner,
             type=experiment_type,
             seed=config.get("seed"),

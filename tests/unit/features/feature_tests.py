@@ -10,7 +10,12 @@ import time
 import unittest
 
 from baseplate._compat import long, range
-from baseplate.features import FeatureFlags, User, TargetingParams
+from baseplate.features import (
+    FeatureFlags,
+    SessionContext,
+    User,
+    TargetingParams,
+)
 from baseplate.features.feature import (
     feature_flag_from_config,
     FeatureFlag,
@@ -29,8 +34,10 @@ class TestFeatureFlags(unittest.TestCase):
     def setUp(self):
         super(TestFeatureFlags, self).setUp()
         self.mock_filewatcher = mock.Mock(spec=FileWatcher)
-        self.user = User(name="gary", id="t2_beef", created=int(time.time()))
-        self.targeting = TargetingParams()
+        self.session = SessionContext(
+            session_id="1",
+            user=User(name="gary", id="t2_beef", created=int(time.time())),
+        )
 
     def test_enabled_matches_expected(self):
         self.mock_filewatcher.get_data.return_value = {
@@ -45,27 +52,19 @@ class TestFeatureFlags(unittest.TestCase):
 
         with mock.patch("baseplate.features.feature.FeatureFlag.enabled") as p:
             p.return_value = True
-            self.assertTrue(features.enabled(
-                "test",
-                self.user,
-                self.targeting,
-            ))
+            self.assertTrue(features.enabled("test", self.session))
             p.return_value = False
-            self.assertFalse(features.enabled(
-                "test",
-                self.user,
-                self.targeting,
-            ))
+            self.assertFalse(features.enabled("test", self.session))
 
     def test_false_if_cant_load_config(self):
         self.mock_filewatcher.get_data.side_effect = WatchedFileNotAvailableError("path", None)  # noqa
         features = FeatureFlags(self.mock_filewatcher)
-        self.assertFalse(features.enabled("test", self.user, self.targeting))
+        self.assertFalse(features.enabled("test", self.session))
 
     def test_false_if_cant_parse_config(self):
         self.mock_filewatcher.get_data.side_effect = TypeError()
         features = FeatureFlags(self.mock_filewatcher)
-        self.assertFalse(features.enabled("test", self.user, self.targeting))
+        self.assertFalse(features.enabled("test", self.session))
 
     def test_false_if_cant_find_feature(self):
         self.mock_filewatcher.get_data.return_value = {
@@ -77,7 +76,7 @@ class TestFeatureFlags(unittest.TestCase):
             },
         }
         features = FeatureFlags(self.mock_filewatcher)
-        self.assertFalse(features.enabled("test", self.user, self.targeting))
+        self.assertFalse(features.enabled("test", self.session))
 
 
 class TestFeatureFlagFromConfig(unittest.TestCase):

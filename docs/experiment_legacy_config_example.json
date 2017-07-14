@@ -5,8 +5,6 @@
         "owner": "experiment_owner",
         "type": "legacy",
         "experiment": {
-            "id": "experiment_id",
-            "name": "experiment_name",
             "seed": "optional_seed_override",
             "page": false,
             "url": {

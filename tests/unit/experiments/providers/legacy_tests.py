@@ -57,8 +57,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "variants": {
                     "control_1": 10,
                     "control_2": 10,
@@ -76,8 +74,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "variants": {
                     "control_1": 10,
                     "control_2": 10,
@@ -93,8 +89,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "seed": "test-seed",
                 "variants": {
                     "control_1": 10,
@@ -118,8 +112,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "variants": {
                     "control_1": 10,
                     "control_2": 10,
@@ -159,8 +151,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "variants": {
                     "control_1": 10,
                     "control_2": 10,
@@ -215,8 +205,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "control_only",
                 "variants": {
                     "control_1": 10,
                     "control_2": 10,
@@ -229,8 +217,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "three_variants",
                 "variants": {
                     'remove_vote_counters': 5,
                     'control_1': 10,
@@ -244,8 +230,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "three_variants_more",
                 "variants": {
                     'remove_vote_counters': 15.6,
                     'control_1': 10,
@@ -296,8 +280,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "fifty_fifty",
                 "variants": {
                     'control_1': 50,
                     'control_2': 50,
@@ -310,8 +292,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "almost_fifty_fifty",
                 "variants": {
                     'control_1': 49,
                     'control_2': 51,
@@ -404,8 +384,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -413,6 +391,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -435,8 +414,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "enabled": True,
                 "variants": {
                     "larger": 5,
@@ -445,6 +422,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -467,8 +445,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "enabled": False,
                 "variants": {
                     "larger": 5,
@@ -477,6 +453,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -499,8 +476,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -508,6 +483,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -530,8 +506,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -539,6 +513,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -564,8 +539,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "enabled": True,
                 "variants": {
                     "larger": 5,
@@ -574,6 +547,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -596,8 +570,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "enabled": False,
                 "variants": {
                     "larger": 5,
@@ -606,6 +578,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -628,8 +601,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -637,6 +608,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -660,8 +632,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "enabled": False,
                 "variants": {
                     "larger": 5,
@@ -670,6 +640,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {
@@ -693,8 +664,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "enabled": False,
                 "variants": {
                     "larger": 5,
@@ -703,6 +672,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 },
                 "feature": {
+                    "id": "1",
                     "name": "test",
                     "type": "basic",
                     "feature": {},
@@ -723,8 +693,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "page": True,
                 "content_flags": {
                     "subreddit_only": True,
@@ -769,8 +737,6 @@ class TestLegacyExperiment(unittest.TestCase):
             "owner": "test",
             "type": "legacy",
             "experiment": {
-                "id": "1",
-                "name": "test",
                 "page": True,
                 "content_flags": {
                     "link_only": True,

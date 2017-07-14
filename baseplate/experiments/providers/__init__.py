@@ -29,7 +29,12 @@ def experiment_from_config(config):
         )
         return ForcedVariantExperiment(experiment_id, name, owner, override)
     if experiment_type == "legacy":
-        return LegacyExperiment.from_config(owner, experiment_config)
+        return LegacyExperiment.from_config(
+            id=id,
+            name=name,
+            owner=owner,
+            config=experiment_config,
+        )
     else:
         logger.warning(
             "Found an experiment <%s:%s> with an unknown experiment type <%s> "

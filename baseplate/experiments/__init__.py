@@ -11,6 +11,7 @@ from .providers import experiment_from_config
 from .._compat import iteritems
 from ..context import ContextFactory
 from ..events import Event, EventTooLargeError, EventQueueFullError
+from ..features import TargetingParams
 from ..file_watcher import FileWatcher, WatchedFileNotAvailableError
 
 
@@ -51,23 +52,23 @@ class Experiments(object):
             logger.warning("Could not load experiment config: %r", name)
             return
 
-    def variant(self, name, user, content, targeting):
+    def variant(self, name, session_context):
         if name not in self._cache:
-            self._cache[name] = self._bucket(
-                name,
-                user,
-                content,
-                targeting,
-            )
+            self._cache[name] = self._bucket(name, session_context)
         return self._cache[name]
 
-    def _bucket(self, name, user, content, targeting):
+    def _bucket(self, name, session_context):
         config = self._get_config(name)
         if not config:
             return None
 
         experiment = experiment_from_config(config)
-        variant = experiment.variant(user, content, targeting)
+        targeting = TargetingParams.from_session_context(session_context)
+        variant = experiment.variant(
+            session_context.user,
+            session_context.content,
+            targeting,
+        )
 
         should_log_bucketing_event = experiment.should_log_bucketing()
 
@@ -75,24 +76,18 @@ class Experiments(object):
             should_log_bucketing_event = False
 
         if should_log_bucketing_event:
-            self._log_bucketing_event(user, experiment, variant)
+            self._log_bucketing_event(session_context, experiment, variant)
 
         return variant
 
-    def _log_bucketing_event(self, user, experiment, variant):
+    def _log_bucketing_event(self, session_context, experiment, variant):
 
         if not self._event_queue:
             return
 
         event_type = "bucket"
         event = Event("bucketing_events", event_type)
-        if user.logged_in:
-            event.set_field("user_id", user.id)
-            event.set_field("user_name", user.name)
-        else:
-            event.set_field("loid", user.id36)
-            event.set_field("loid_created", user.created)
-        for field, value in iteritems(user.event_baggage):
+        for field, value in iteritems(session_context.event_params()):
             event.set_field(field, value)
         event.set_field("variant", variant)
         event.set_field("experiment_id", experiment.id)
