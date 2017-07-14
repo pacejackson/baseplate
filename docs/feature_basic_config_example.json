@@ -1,0 +1,22 @@
+{
+    "feature_name": {
+        "id": "feature_id",
+        "name": "feature_name",
+        "owner": "feature_owner",
+        "type": "basic",
+        "global_override": "optional_override_'on'_or_'off'",
+        "feature": {
+            "seed": "optional_seed_override",
+            "percent_logged_in": 100,
+            "percent_logged_out": 0,
+            "targeting": {
+                "user_flags": ["admin", "employee"],
+                "url_flag": "url_flag",
+                "users": ["allowed", "users"],
+                "subreddits": ["allowed", "subreddits"],
+                "subdomains": ["allowed", "subdomains"],
+                "oauth_clients": ["allowed", "oauth_clients"]
+            }
+        }
+    }
+}

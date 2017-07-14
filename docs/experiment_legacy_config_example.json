@@ -1,0 +1,43 @@
+{
+    "experiment_name": {
+        "id": "experiment_id",
+        "name": "experiment_name",
+        "owner": "experiment_owner",
+        "type": "legacy",
+        "experiment": {
+            "id": "experiment_id",
+            "name": "experiment_name",
+            "seed": "optional_seed_override",
+            "page": false,
+            "url": {
+                "url_flag_0": "active",
+                "url_flag_1": "control_1",
+                "url_flag_2": "control_2"
+            },
+            "variants": {
+                "control_1": 5,
+                "control_2": 5,
+                "active": 5
+            },
+            "feature": {
+                "id": "experiment_id",
+                "name": "experiment_name",
+                "owner": "experiment_owner",
+                "type": "basic",
+                "feature": {
+                    "seed": "optional_seed_override",
+                    "percent_logged_in": 100,
+                    "percent_logged_out": 100,
+                    "targeting": {
+                        "user_flags": ["admin", "employee"],
+                        "url_flag": "url_flag",
+                        "users": ["allowed", "users"],
+                        "subreddits": ["allowed", "subreddits"],
+                        "subdomains": ["allowed", "subdomains"],
+                        "oauth_clients": ["allowed", "oauth_clients"]
+                    }
+                }
+            }
+        }
+    }
+}
