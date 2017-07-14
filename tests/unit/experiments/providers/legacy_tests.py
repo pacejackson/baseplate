@@ -341,41 +341,37 @@ class TestLegacyExperiment(unittest.TestCase):
                 measured_percent, percent, delta=error_bar_percent
             )
 
-    def do_user_experiment_simulation(self, users, content, targeting, experiment):
+    def do_user_experiment_simulation(self, users, content, experiment):
         static_vars = {
             "content": content,
-            "targeting": targeting,
+            "url_flags": [],
         }
-        target_var = "user"
-        targets = users
         return self._simulate_experiment(
             experiment=experiment,
             static_vars=static_vars,
-            target_var=target_var,
-            targets=targets,
+            target_var="user",
+            targets=users,
         )
 
-    def do_page_experiment_simulation(self, user, pages, targeting, experiment):
+    def do_page_experiment_simulation(self, user, pages, experiment):
         static_vars = {
             "user": user,
-            "targeting": targeting,
+            "url_flags": [],
         }
-        target_var = "content"
-        targets = pages
         return self._simulate_experiment(
             experiment=experiment,
             static_vars=static_vars,
-            target_var=target_var,
-            targets=targets,
+            target_var="content",
+            targets=pages,
         )
 
-    def assert_no_user_experiment(self, users, content, targeting, experiment):
+    def assert_no_user_experiment(self, users, content, experiment):
         for user in users:
-            self.assertIs(experiment.variant(user, content, targeting), None)
+            self.assertIs(experiment.variant(user, content, []), None)
 
-    def assert_no_page_experiment(self, user, pages, targeting, experiment):
+    def assert_no_page_experiment(self, user, pages, experiment):
         for page in pages:
-            self.assertIs(experiment.variant(user, page, targeting), None)
+            self.assertIs(experiment.variant(user, page, []), None)
 
     def test_loggedin_experiment(self):
         experiment = experiment_from_config({
@@ -403,7 +399,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.do_user_experiment_simulation(
             users=get_users(2000),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -434,7 +429,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.do_user_experiment_simulation(
             users=get_users(2000),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -465,7 +459,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.assert_no_user_experiment(
             users=get_users(2000),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -495,7 +488,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.do_user_experiment_simulation(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -528,7 +520,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.assert_no_user_experiment(
             users=users,
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -559,7 +550,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.do_user_experiment_simulation(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -590,7 +580,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -621,7 +610,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.do_user_experiment_simulation(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -653,7 +641,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -682,7 +669,6 @@ class TestLegacyExperiment(unittest.TestCase):
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -708,25 +694,21 @@ class TestLegacyExperiment(unittest.TestCase):
         self.do_page_experiment_simulation(
             user=get_users(1)[0],
             pages=generate_content(2000, "subreddit"),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
         self.assert_no_page_experiment(
             user=get_users(1)[0],
             pages=generate_content(2000, "link"),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
         self.assert_no_page_experiment(
             user=get_users(1)[0],
             pages=generate_content(2000, "comment"),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
 
@@ -752,24 +734,20 @@ class TestLegacyExperiment(unittest.TestCase):
         self.do_page_experiment_simulation(
             user=get_users(1)[0],
             pages=generate_content(2000, "link"),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
         self.do_page_experiment_simulation(
             user=get_users(1)[0],
             pages=generate_content(2000, "comment"),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
         self.assert_no_page_experiment(
             user=get_users(1)[0],
             pages=generate_content(2000, "subreddit"),
-            targeting=TargetingParams(),
             experiment=experiment,
         )
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            targeting=TargetingParams(),
             experiment=experiment,
         )

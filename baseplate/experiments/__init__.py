@@ -8,6 +8,7 @@ import json
 import logging
 
 from .providers import experiment_from_config
+from .providers.legacy import LegacyExperiment
 from .._compat import iteritems
 from ..context import ContextFactory
 from ..events import Event, EventTooLargeError, EventQueueFullError
@@ -63,11 +64,19 @@ class Experiments(object):
             return None
 
         experiment = experiment_from_config(config)
-        targeting = TargetingParams.from_session_context(session_context)
+        if isinstance(experiment, LegacyExperiment) and experiment.feature:
+            targeting = TargetingParams.from_session_context(session_context)
+            is_enabled = experiment.feature.is_enabled(
+                session_context.user,
+                targeting,
+            )
+            if not is_enabled:
+                return None
+
         variant = experiment.variant(
-            session_context.user,
-            session_context.content,
-            targeting,
+            user=session_context.user,
+            content=session_context.content,
+            url_flags=session_context.url_params.get("feature", []),
         )
 
         should_log_bucketing_event = experiment.should_log_bucketing()

@@ -87,7 +87,7 @@ class SessionContext(object):
         if self._url_properties is None:
             self._url_properties = {}
             components = parse_url(self._url)
-            self._url_properties["url_params"] = components.params
+            self._url_properties["url_params"] = components.params or {}
             self._url_properties["subdomain"] = components.subdomain
             self._url_properties["subreddit"] = components.subreddit_name
             self._url_properties["content"] = Content(

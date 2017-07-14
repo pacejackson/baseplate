@@ -75,17 +75,14 @@ class LegacyExperiment(ExperimentInterface):
     def should_log_bucketing(self):
         return True
 
-    def variant(self, user, content, targeting):
+    def variant(self, user, content, url_flags):
         """ Determine which variant of this experiment, if any, is active. """
 
         if not self.enabled:
             return None
 
-        if self.feature and not self.feature.enabled(user, targeting):
-            return None
-
-        if targeting.url_features and self.url_variants:
-            for flag in targeting.url_features:
+        if url_flags and self.url_variants:
+            for flag in url_flags:
                 if flag in self.url_variants:
                     return self.url_variants[flag]
 
