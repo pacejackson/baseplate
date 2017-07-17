@@ -8,7 +8,6 @@ import json
 import logging
 
 from .providers import experiment_from_config
-from .providers.legacy import LegacyExperiment
 from .._compat import iteritems
 from ..context import ContextFactory
 from ..events import Event, EventTooLargeError, EventQueueFullError
