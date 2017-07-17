@@ -8,6 +8,7 @@ import logging
 
 from .forced_variant import ForcedVariantExperiment
 from .legacy import LegacyExperiment
+from ...features.feature import feature_flag_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ def experiment_from_config(config):
     owner = config.get("owner")
     experiment_config = config["experiment"]
     override = config.get("global_override")
+    feature_flag = None
     if override:
         logger.warning(
             "Found an experiment with a global override <%s:%s> that is owned "
@@ -28,12 +30,15 @@ def experiment_from_config(config):
             owner,
         )
         return ForcedVariantExperiment(experiment_id, name, owner, override)
+    if "feature" in config:
+        feature_flag = feature_flag_from_config(config["feature"])
     if experiment_type == "legacy":
         return LegacyExperiment.from_config(
             id=id,
             name=name,
             owner=owner,
             config=experiment_config,
+            feature_flag=feature_flag,
         )
     else:
         logger.warning(

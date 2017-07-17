@@ -18,9 +18,16 @@ class LegacyExperiment(ExperimentInterface):
 
     EXPERIMENT_TYPES = {"page", "user"}
 
-    def __init__(self, id, name, owner, type, variants, url_variants=None,
-                 content_flags=None, seed=None, enabled=True, feature=None):
-        super(LegacyExperiment, self).__init__(id, name, owner)
+    def __init__(self, id, name, owner, type, variants, feature_flag=None,
+                 enabled=True, seed=None, url_variants=None,
+                 content_flags=None):
+        super(LegacyExperiment, self).__init__(
+            id=id,
+            name=name,
+            owner=owner,
+            feature_flag=feature_flag,
+            enabled=enabled,
+        )
         url_variants = url_variants or {}
         content_flags = content_flags or {}
         assert type in self.EXPERIMENT_TYPES
@@ -32,12 +39,9 @@ class LegacyExperiment(ExperimentInterface):
         self.content_flags = content_flags
         self.variants = variants
         self.url_variants = url_variants
-        self.enabled = enabled
-        self.feature = feature
 
     @classmethod
-    def from_config(cls, id, name, owner, config):
-        from ...features.feature import feature_flag_from_config
+    def from_config(cls, id, name, owner, config, feature_flag=None):
         if config.get('page'):
             experiment_type = "page"
         else:
@@ -55,21 +59,17 @@ class LegacyExperiment(ExperimentInterface):
                 )
             else:
                 url_variants[url_flag] = variant
-        if "feature" in config:
-            feature_flag = feature_flag_from_config(config["feature"])
-        else:
-            feature_flag = None
         return cls(
             id=id,
             name=name,
             owner=owner,
+            feature_flag=feature_flag,
             type=experiment_type,
             seed=config.get("seed"),
             variants=variants,
             url_variants=url_variants,
             content_flags=config.get("content_flags", {}),
             enabled=config.get("enabled", True),
-            feature=feature_flag,
         )
 
     def should_log_bucketing(self):
@@ -77,9 +77,6 @@ class LegacyExperiment(ExperimentInterface):
 
     def variant(self, user, content, url_flags):
         """ Determine which variant of this experiment, if any, is active. """
-
-        if not self.enabled:
-            return None
 
         if url_flags and self.url_variants:
             for flag in url_flags:

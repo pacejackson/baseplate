@@ -64,14 +64,9 @@ class Experiments(object):
             return None
 
         experiment = experiment_from_config(config)
-        if isinstance(experiment, LegacyExperiment) and experiment.feature:
-            targeting = TargetingParams.from_session_context(session_context)
-            is_enabled = experiment.feature.is_enabled(
-                session_context.user,
-                targeting,
-            )
-            if not is_enabled:
-                return None
+        targeting = TargetingParams.from_session_context(session_context)
+        if not experiment.enabled(user=session_context.user, targeting=targeting):
+            return None
 
         variant = experiment.variant(
             user=session_context.user,
