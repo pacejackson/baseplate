@@ -334,21 +334,21 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
         super(TestSimulatedLegacyExperiments, self).setUp()
         self.event_queue = mock.Mock(spec=EventQueue)
         self.mock_filewatcher = mock.Mock(spec=FileWatcher)
-        self.factory = ExperimentsContextFactory(
-            self.mock_filewatcher,
-            self.event_queue,
-        )
+        self.factory = ExperimentsContextFactory("path", self.event_queue)
+        self.factory._filewatcher = self.mock_filewatcher
 
     def _simulate_experiment(self, config, static_vars, target_var, targets):
         num_experiments = len(targets)
         counter = collections.Counter()
-        self.mock_filewatcher.get_data.return_value = {"test": config}
+        self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for target in targets:
             session_vars = {target_var: target}
             session_vars.update(static_vars)
-            session = SessionContext(**session_vars)
+            user = session_vars.pop("user")
+            session = SessionContext("1", user, url="https://www.reddit.com")
+            session._url_properties = session_vars
             experiments = self.factory.make_object_for_context(None, None)
-            variant = experiments.variant("test", session)
+            variant = experiments.variant(config["name"], session)
             if variant:
                 counter[variant] += 1
 
@@ -368,7 +368,9 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
     def do_user_experiment_simulation(self, users, content, config):
         static_vars = {
             "content": content,
-            "url_flags": [],
+            "url_params": {},
+            "subreddit": None,
+            "subdomain": None,
         }
         return self._simulate_experiment(
             config=config,
@@ -380,7 +382,9 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
     def do_page_experiment_simulation(self, user, pages, config):
         static_vars = {
             "user": user,
-            "url_flags": [],
+            "url_params": {},
+            "subreddit": None,
+            "subdomain": None,
         }
         return self._simulate_experiment(
             config=config,
@@ -389,16 +393,34 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             targets=pages,
         )
 
-    def assert_no_user_experiment(self, users, content, experiment):
+    def assert_no_user_experiment(self, users, content, config):
+        self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for user in users:
-            self.assertIs(experiment.variant(user, content, []), None)
+            session = SessionContext("1", user)
+            session._url_properties = {
+                "content": content,
+                "url_params": {},
+                "subreddit": None,
+                "subdomain": None,
+            }
+            experiments = self.factory.make_object_for_context(None, None)
+            self.assertIs(experiments.variant(config["name"], session), None)
 
-    def assert_no_page_experiment(self, user, pages, experiment):
+    def assert_no_page_experiment(self, user, pages, config):
+        self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for page in pages:
-            self.assertIs(experiment.variant(user, page, []), None)
+            session = SessionContext("1", user)
+            session._url_properties = {
+                "content": page,
+                "url_params": {},
+                "subreddit": None,
+                "subdomain": None,
+            }
+            experiments = self.factory.make_object_for_context(None, None)
+            self.assertIs(experiments.variant(config["name"], session), None)
 
     def test_loggedin_experiment(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -419,20 +441,20 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.do_user_experiment_simulation(
             users=get_users(2000),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_loggedin_experiment_explicit_enable(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -454,20 +476,20 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.do_user_experiment_simulation(
             users=get_users(2000),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_loggedin_experiment_explicit_disable(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -489,20 +511,20 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.assert_no_user_experiment(
             users=get_users(2000),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_loggedout_experiment(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -523,20 +545,20 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.do_user_experiment_simulation(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=True),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_loggedout_experiment_missing_loids(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -557,23 +579,23 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         users = get_users(2000, logged_in=False)
         for user in users:
             user.id = None
         self.assert_no_user_experiment(
             users=users,
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=True),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_loggedout_experiment_explicit_enable(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -595,20 +617,20 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.do_user_experiment_simulation(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=True),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_loggedout_experiment_explicit_disable(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -630,20 +652,20 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=True),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_mixed_experiment(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -665,19 +687,20 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.do_user_experiment_simulation(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_mixed_experiment_disable(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "enabled": False,
             "feature": {
                 "id": "1",
                 "name": "test",
@@ -688,7 +711,6 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 },
             },
             "experiment": {
-                "enabled": False,
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -696,15 +718,15 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_not_loggedin_or_loggedout(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -716,7 +738,6 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "feature": {},
             },
             "experiment": {
-                "enabled": False,
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -724,15 +745,15 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_subreddit_experiment(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -749,30 +770,30 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.do_page_experiment_simulation(
             user=get_users(1)[0],
             pages=generate_content(2000, "subreddit"),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_page_experiment(
             user=get_users(1)[0],
             pages=generate_content(2000, "link"),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_page_experiment(
             user=get_users(1)[0],
             pages=generate_content(2000, "comment"),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
 
     def test_link_experiment(self):
-        experiment = experiment_from_config({
+        config = {
             "id": "1",
             "name": "test",
             "owner": "test",
@@ -789,24 +810,24 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                     "control_2": 10,
                 },
             },
-        })
+        }
         self.do_page_experiment_simulation(
             user=get_users(1)[0],
             pages=generate_content(2000, "link"),
-            experiment=experiment,
+            config=config,
         )
         self.do_page_experiment_simulation(
             user=get_users(1)[0],
             pages=generate_content(2000, "comment"),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_page_experiment(
             user=get_users(1)[0],
             pages=generate_content(2000, "subreddit"),
-            experiment=experiment,
+            config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
             content=Content(None, None),
-            experiment=experiment,
+            config=config,
         )
