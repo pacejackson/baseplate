@@ -13,7 +13,7 @@ from ...features.feature import feature_flag_from_config
 logger = logging.getLogger(__name__)
 
 
-class Experiment(object):
+class ExperimentManager(object):
 
     def __init__(self, id, name, owner, experiment, enabled=True,
                  feature_flag=None):
@@ -67,7 +67,7 @@ def experiment_from_config(config):
             name,
             owner,
         )
-        return Experiment(
+        return ExperimentManager(
             id=experiment_id,
             name=name,
             owner=owner,
@@ -81,7 +81,7 @@ def experiment_from_config(config):
             name,
             owner,
         )
-        return Experiment(
+        return ExperimentManager(
             id=experiment_id,
             name=name,
             owner=owner,
@@ -93,7 +93,7 @@ def experiment_from_config(config):
     else:
         feature_flag = None
     if experiment_type == "legacy":
-        return Experiment(
+        return ExperimentManager(
             id=experiment_id,
             name=name,
             owner=owner,
@@ -110,7 +110,7 @@ def experiment_from_config(config):
             experiment_type,
             owner,
         )
-        return Experiment(
+        return ExperimentManager(
             id=experiment_id,
             name=name,
             owner=owner,

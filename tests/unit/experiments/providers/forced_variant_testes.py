@@ -28,7 +28,10 @@ class TestForcedVariantExperiment(unittest.TestCase):
             }
         }
         experiment = experiment_from_config(cfg)
-        self.assertTrue(isinstance(experiment, ForcedVariantExperiment))
+        self.assertTrue(isinstance(
+            experiment._experiment,
+            ForcedVariantExperiment,
+        ))
         self.assertIs(experiment.variant(), None)
         self.assertFalse(experiment.should_log_bucketing())
 
@@ -49,14 +52,39 @@ class TestForcedVariantExperiment(unittest.TestCase):
             }
         }
         experiment = experiment_from_config(cfg)
-        self.assertTrue(isinstance(experiment, ForcedVariantExperiment))
+        self.assertTrue(isinstance(
+            experiment._experiment,
+            ForcedVariantExperiment),
+        )
+
+    def test_disable_returns_forced_variant(self):
+        cfg = {
+            "id": "1",
+            "name": "test",
+            "owner": "test",
+            "type": "legacy",
+            "enabled": False,
+            "experiment": {
+                "id": "1",
+                "name": "test",
+                "variants": {
+                    "control_1": 10,
+                    "control_2": 10,
+                }
+            }
+        }
+        experiment = experiment_from_config(cfg)
+        self.assertTrue(isinstance(
+            experiment._experiment,
+            ForcedVariantExperiment),
+        )
 
     def test_forced_variant(self):
-        experiment = ForcedVariantExperiment("id", "name", "owner", "foo")
+        experiment = ForcedVariantExperiment("foo")
         self.assertIs(experiment.variant(), "foo")
         self.assertFalse(experiment.should_log_bucketing())
 
     def test_forced_variant_null(self):
-        experiment = ForcedVariantExperiment("id", "name", "owner", None)
+        experiment = ForcedVariantExperiment(None)
         self.assertIs(experiment.variant(), None)
         self.assertFalse(experiment.should_log_bucketing())

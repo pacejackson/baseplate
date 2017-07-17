@@ -10,9 +10,14 @@ import time
 import unittest
 
 from baseplate._compat import iteritems, long, range
-from baseplate.features import Content, TargetingParams, User
+from baseplate.events import EventQueue
+from baseplate.experiments import ExperimentsContextFactory
 from baseplate.experiments.providers import experiment_from_config
 from baseplate.experiments.providers.legacy import LegacyExperiment
+from baseplate.features import Content, TargetingParams, User, SessionContext
+from baseplate.file_watcher import FileWatcher, WatchedFileNotAvailableError
+
+from .... import mock
 
 
 def get_users(num_users, logged_in=True):
@@ -63,9 +68,12 @@ class TestLegacyExperiment(unittest.TestCase):
                 }
             }
         }
-        experiment = experiment_from_config(cfg)
-        self.assertTrue(isinstance(experiment, LegacyExperiment))
-        self.assertTrue(experiment.should_log_bucketing())
+        experiment_manager = experiment_from_config(cfg)
+        self.assertTrue(isinstance(
+            experiment_manager._experiment,
+            LegacyExperiment,
+        ))
+        self.assertTrue(experiment_manager.should_log_bucketing())
 
     def test_calculate_bucket_value(self):
         cfg = {
@@ -80,7 +88,7 @@ class TestLegacyExperiment(unittest.TestCase):
                 }
             }
         }
-        experiment = experiment_from_config(cfg)
+        experiment = experiment_from_config(cfg)._experiment
         experiment.num_buckets = 1000
         self.assertEqual(experiment._calculate_bucket("t2_1"), long(236))
         cfg = {
@@ -96,7 +104,7 @@ class TestLegacyExperiment(unittest.TestCase):
                 }
             }
         }
-        seeded_experiment = experiment_from_config(cfg)
+        seeded_experiment = experiment_from_config(cfg)._experiment
         self.assertNotEqual(seeded_experiment.seed, experiment.seed)
         self.assertIsNot(seeded_experiment.seed, None)
         seeded_experiment.num_buckets = 1000
@@ -118,7 +126,7 @@ class TestLegacyExperiment(unittest.TestCase):
                 }
             }
         }
-        experiment = experiment_from_config(cfg)
+        experiment = experiment_from_config(cfg)._experiment
 
         # Give ourselves enough users that we can get some reasonable amount of
         # precision when checking amounts per bucket.
@@ -158,7 +166,7 @@ class TestLegacyExperiment(unittest.TestCase):
                 "seed": "itscoldintheoffice",
             }
         }
-        experiment = experiment_from_config(cfg)
+        experiment = experiment_from_config(cfg)._experiment
 
         # Give ourselves enough users that we can get some reasonable amount of
         # precision when checking amounts per bucket.
@@ -210,7 +218,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_2": 10,
                 }
             }
-        })
+        })._experiment
         three_variants = experiment_from_config({
             "id": "1",
             "name": "three_variants",
@@ -223,7 +231,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     'control_2': 5,
                 }
             }
-        })
+        })._experiment
         three_variants_more = experiment_from_config({
             "id": "1",
             "name": "three_variants_more",
@@ -236,7 +244,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     'control_2': 20,
                 }
             }
-        })
+        })._experiment
 
         counters = collections.defaultdict(collections.Counter)
         for bucket in range(control_only.num_buckets):
@@ -285,7 +293,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     'control_2': 50,
                 }
             }
-        })
+        })._experiment
         almost_fifty_fifty = experiment_from_config({
             "id": "1",
             "name": "almost_fifty_fifty",
@@ -297,7 +305,7 @@ class TestLegacyExperiment(unittest.TestCase):
                     'control_2': 51,
                 }
             }
-        })
+        })._experiment
         for bucket in range(fifty_fifty.num_buckets):
             for experiment in (fifty_fifty, almost_fifty_fifty):
                 variant = experiment._choose_variant(bucket)
@@ -319,19 +327,35 @@ class TestLegacyExperiment(unittest.TestCase):
         scaled_percentage = float(count) / (almost_fifty_fifty.num_buckets / 100)
         self.assertEqual(scaled_percentage, 50)
 
-    def _simulate_experiment(self, experiment, static_vars, target_var, targets):
+
+class TestSimulatedLegacyExperiments(unittest.TestCase):
+
+    def setUp(self):
+        super(TestSimulatedLegacyExperiments, self).setUp()
+        self.event_queue = mock.Mock(spec=EventQueue)
+        self.mock_filewatcher = mock.Mock(spec=FileWatcher)
+        self.factory = ExperimentsContextFactory(
+            self.mock_filewatcher,
+            self.event_queue,
+        )
+
+    def _simulate_experiment(self, config, static_vars, target_var, targets):
         num_experiments = len(targets)
         counter = collections.Counter()
+        self.mock_filewatcher.get_data.return_value = {"test": config}
         for target in targets:
-            experiment_vars = {target_var: target}
-            experiment_vars.update(static_vars)
-            variant = experiment.variant(**experiment_vars)
+            session_vars = {target_var: target}
+            session_vars.update(static_vars)
+            session = SessionContext(**session_vars)
+            experiments = self.factory.make_object_for_context(None, None)
+            variant = experiments.variant("test", session)
             if variant:
                 counter[variant] += 1
 
         # this test will still probabilistically fail, but we can mitigate
         # the likeliness of that happening
         error_bar_percent = 100. / math.sqrt(num_experiments)
+        experiment = experiment_from_config(config)._experiment
         for variant, percent in iteritems(experiment.variants):
             # Our actual percentage should be within our expected percent
             # (expressed as a part of 100 rather than a fraction of 1)
@@ -341,25 +365,25 @@ class TestLegacyExperiment(unittest.TestCase):
                 measured_percent, percent, delta=error_bar_percent
             )
 
-    def do_user_experiment_simulation(self, users, content, experiment):
+    def do_user_experiment_simulation(self, users, content, config):
         static_vars = {
             "content": content,
             "url_flags": [],
         }
         return self._simulate_experiment(
-            experiment=experiment,
+            config=config,
             static_vars=static_vars,
             target_var="user",
             targets=users,
         )
 
-    def do_page_experiment_simulation(self, user, pages, experiment):
+    def do_page_experiment_simulation(self, user, pages, config):
         static_vars = {
             "user": user,
             "url_flags": [],
         }
         return self._simulate_experiment(
-            experiment=experiment,
+            config=config,
             static_vars=static_vars,
             target_var="content",
             targets=pages,
@@ -379,6 +403,14 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_in": 100,
+                },
+            },
             "experiment": {
                 "variants": {
                     "larger": 5,
@@ -386,18 +418,15 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_1": 10,
                     "control_2": 10,
                 },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_in": 100,
-                    },
-                },
             },
         })
         self.do_user_experiment_simulation(
             users=get_users(2000),
+            content=Content(None, None),
+            experiment=experiment,
+        )
+        self.assert_no_user_experiment(
+            users=get_users(2000, logged_in=False),
             content=Content(None, None),
             experiment=experiment,
         )
@@ -408,26 +437,31 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "enabled": True,
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_in": 100,
+                },
+            },
             "experiment": {
-                "enabled": True,
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
                     "control_1": 10,
                     "control_2": 10,
                 },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_in": 100,
-                    },
-                },
             },
         })
         self.do_user_experiment_simulation(
             users=get_users(2000),
+            content=Content(None, None),
+            experiment=experiment,
+        )
+        self.assert_no_user_experiment(
+            users=get_users(2000, logged_in=False),
             content=Content(None, None),
             experiment=experiment,
         )
@@ -438,26 +472,31 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "enabled": False,
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_in": 100,
+                },
+            },
             "experiment": {
-                "enabled": False,
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
                     "control_1": 10,
                     "control_2": 10,
                 },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_in": 100,
-                    },
-                },
             },
         })
         self.assert_no_user_experiment(
             users=get_users(2000),
+            content=Content(None, None),
+            experiment=experiment,
+        )
+        self.assert_no_user_experiment(
+            users=get_users(2000, logged_in=False),
             content=Content(None, None),
             experiment=experiment,
         )
@@ -468,6 +507,14 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_out": 100,
+                },
+            },
             "experiment": {
                 "variants": {
                     "larger": 5,
@@ -475,18 +522,15 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_1": 10,
                     "control_2": 10,
                 },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_out": 100,
-                    },
-                },
             },
         })
         self.do_user_experiment_simulation(
             users=get_users(2000, logged_in=False),
+            content=Content(None, None),
+            experiment=experiment,
+        )
+        self.assert_no_user_experiment(
+            users=get_users(2000, logged_in=True),
             content=Content(None, None),
             experiment=experiment,
         )
@@ -497,20 +541,20 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_out": 100,
+                },
+            },
             "experiment": {
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
                     "control_1": 10,
                     "control_2": 10,
-                },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_out": 100,
-                    },
                 },
             },
         })
@@ -522,6 +566,11 @@ class TestLegacyExperiment(unittest.TestCase):
             content=Content(None, None),
             experiment=experiment,
         )
+        self.assert_no_user_experiment(
+            users=get_users(2000, logged_in=True),
+            content=Content(None, None),
+            experiment=experiment,
+        )
 
     def test_loggedout_experiment_explicit_enable(self):
         experiment = experiment_from_config({
@@ -529,6 +578,14 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_out": 100,
+                },
+            },
             "experiment": {
                 "enabled": True,
                 "variants": {
@@ -537,18 +594,15 @@ class TestLegacyExperiment(unittest.TestCase):
                     "control_1": 10,
                     "control_2": 10,
                 },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_out": 100,
-                    },
-                },
             },
         })
         self.do_user_experiment_simulation(
             users=get_users(2000, logged_in=False),
+            content=Content(None, None),
+            experiment=experiment,
+        )
+        self.assert_no_user_experiment(
+            users=get_users(2000, logged_in=True),
             content=Content(None, None),
             experiment=experiment,
         )
@@ -559,26 +613,31 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "enabled": False,
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_out": 100,
+                },
+            },
             "experiment": {
-                "enabled": False,
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
                     "control_1": 10,
                     "control_2": 10,
                 },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_out": 100,
-                    },
-                },
             },
         })
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
+            content=Content(None, None),
+            experiment=experiment,
+        )
+        self.assert_no_user_experiment(
+            users=get_users(2000, logged_in=True),
             content=Content(None, None),
             experiment=experiment,
         )
@@ -589,21 +648,21 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_out": 100,
+                    "percent_logged_in": 100,
+                },
+            },
             "experiment": {
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
                     "control_1": 10,
                     "control_2": 10,
-                },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_out": 100,
-                        "percent_logged_in": 100,
-                    },
                 },
             },
         })
@@ -619,6 +678,15 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {
+                    "percent_logged_out": 100,
+                    "percent_logged_in": 100,
+                },
+            },
             "experiment": {
                 "enabled": False,
                 "variants": {
@@ -626,15 +694,6 @@ class TestLegacyExperiment(unittest.TestCase):
                     "smaller": 10,
                     "control_1": 10,
                     "control_2": 10,
-                },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {
-                        "percent_logged_out": 100,
-                        "percent_logged_in": 100,
-                    },
                 },
             },
         })
@@ -650,6 +709,12 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "feature": {
+                "id": "1",
+                "name": "test",
+                "type": "basic",
+                "feature": {},
+            },
             "experiment": {
                 "enabled": False,
                 "variants": {
@@ -657,12 +722,6 @@ class TestLegacyExperiment(unittest.TestCase):
                     "smaller": 10,
                     "control_1": 10,
                     "control_2": 10,
-                },
-                "feature": {
-                    "id": "1",
-                    "name": "test",
-                    "type": "basic",
-                    "feature": {},
                 },
             },
         })
