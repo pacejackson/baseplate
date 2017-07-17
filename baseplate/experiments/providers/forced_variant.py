@@ -4,14 +4,8 @@ from .base import ExperimentInterface
 
 class ForcedVariantExperiment(ExperimentInterface):
 
-    def __init__(self, id, name, owner, forced_variant):
-        super(ForcedVariantExperiment, self).__init__(
-            id=id,
-            name=name,
-            owner=owner,
-            feature_flag=None,
-        )
-        self._variant = forced_variant
+    def __init__(self, variant):
+        self._variant = variant
 
     def variant(self, *a, **kw):
         return self._variant

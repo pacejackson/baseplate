@@ -18,30 +18,22 @@ class LegacyExperiment(ExperimentInterface):
 
     EXPERIMENT_TYPES = {"page", "user"}
 
-    def __init__(self, id, name, owner, type, variants, feature_flag=None,
-                 enabled=True, seed=None, url_variants=None,
+    def __init__(self, name, type, variants, seed=None, url_variants=None,
                  content_flags=None):
-        super(LegacyExperiment, self).__init__(
-            id=id,
-            name=name,
-            owner=owner,
-            feature_flag=feature_flag,
-            enabled=enabled,
-        )
         url_variants = url_variants or {}
         content_flags = content_flags or {}
         assert type in self.EXPERIMENT_TYPES
         assert set(url_variants.values()) - set(variants.keys()) == set()
+        self.name = name
         self.seed = seed if seed else name
         self.num_buckets = 1000
         self.type = type
-        self.owner = owner
         self.content_flags = content_flags
         self.variants = variants
         self.url_variants = url_variants
 
     @classmethod
-    def from_config(cls, id, name, owner, config, feature_flag=None):
+    def from_config(cls, name, config):
         if config.get('page'):
             experiment_type = "page"
         else:
@@ -51,25 +43,20 @@ class LegacyExperiment(ExperimentInterface):
         for url_flag, variant in iteritems(config.get("url", {})):
             if variant not in variants:
                 logger.warning(
-                    "Undefined url variant <%s:%s> in experiment <%s:%s>",
+                    "Undefined url variant <%s:%s> in experiment <%s>",
                     url_flag,
                     variant,
-                    config["id"],
-                    config["name"],
+                    name,
                 )
             else:
                 url_variants[url_flag] = variant
         return cls(
-            id=id,
             name=name,
-            owner=owner,
-            feature_flag=feature_flag,
             type=experiment_type,
             seed=config.get("seed"),
             variants=variants,
             url_variants=url_variants,
             content_flags=config.get("content_flags", {}),
-            enabled=config.get("enabled", True),
         )
 
     def should_log_bucketing(self):
@@ -89,8 +76,7 @@ class LegacyExperiment(ExperimentInterface):
             return self._get_page_experiment_variant(content)
         else:
             logger.warning(
-                "Experiment <%s:%s> with unkown type %s",
-                self.id,
+                "Experiment <%s> with unkown type %s",
                 self.name,
                 self.type,
             )
