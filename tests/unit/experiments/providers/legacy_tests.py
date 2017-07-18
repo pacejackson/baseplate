@@ -14,8 +14,8 @@ from baseplate.events import EventQueue
 from baseplate.experiments import ExperimentsContextFactory
 from baseplate.experiments.providers import experiment_from_config
 from baseplate.experiments.providers.legacy import LegacyExperiment
-from baseplate.features import Content, TargetingParams, User, SessionContext
-from baseplate.file_watcher import FileWatcher, WatchedFileNotAvailableError
+from baseplate.features import Content, User, SessionContext
+from baseplate.file_watcher import FileWatcher
 
 from .... import mock
 
