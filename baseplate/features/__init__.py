@@ -170,7 +170,14 @@ class Content(object):
 
 
 class FeatureFlagsContextFactory(ContextFactory):
+    """ ContextFactory for FeatureFlags.
 
+    This factory will attach a :py:class:`baseplate.features.FeatureFlags`
+    object on the :term:`context object` that will use the config file
+    specified by the given path.  Uses a :py:class:`baseplate.file_watcher.FileWatcher`
+    object to serve the config file so you will be sure to always have the
+    current version.
+    """
     def __init__(self, path):
         self._filewatcher = FileWatcher(path, json.load)
 
@@ -206,11 +213,9 @@ class FeatureFlags(object):
         provider user and targeting parameters.
 
         :param str name: The name of the feature flag that you want to check.
-        :param baseplate.features.User user: Information about the user than
-            you want to check the feature state for.
-        :param baseplate.features.TargetingParams targeting: Request-specific
-            values that are used in determining if a feature flag should be
-            enabled.
+        :param baseplate.features.SessionContext session_context: The current
+        session context.  This contains information about the user and request
+        that may be used in determining if a feature should be enabled.
 
         :rtype: :py:class:`bool`
         """
