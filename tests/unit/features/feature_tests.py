@@ -28,6 +28,9 @@ from ... import mock
 logger = logging.getLogger(__name__)
 
 
+THIRTY_DAYS_SEC = 60 * 60 * 24 * 30
+
+
 class TestFeatureFlags(unittest.TestCase):
 
     def setUp(self):
@@ -41,6 +44,7 @@ class TestFeatureFlags(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {},
             },
         }
@@ -68,6 +72,7 @@ class TestFeatureFlags(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {},
             },
         }
@@ -82,6 +87,7 @@ class TestFeatureFlagFromConfig(unittest.TestCase):
             "id": "1",
             "name": "test",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {},
         }
         feature_flag = feature_flag_from_config(cfg)
@@ -92,6 +98,7 @@ class TestFeatureFlagFromConfig(unittest.TestCase):
             "id": "1",
             "name": "test",
             "type": "unknown",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {},
         }
         feature_flag = feature_flag_from_config(cfg)
@@ -103,6 +110,7 @@ class TestFeatureFlagFromConfig(unittest.TestCase):
             "id": "1",
             "name": "test",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "off",
             "feature": {},
         }
@@ -115,6 +123,7 @@ class TestFeatureFlagFromConfig(unittest.TestCase):
             "id": "1",
             "name": "test",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "on",
             "feature": {},
         }
@@ -141,6 +150,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {},
         }
         feature_flag = feature_flag_from_config(cfg)
@@ -150,6 +160,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "seed": "test-seed",
             }
@@ -168,6 +179,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "on",
         }
         feature_flag = feature_flag_from_config(cfg)
@@ -181,6 +193,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "off",
         }
         feature_flag = feature_flag_from_config(cfg)
@@ -194,6 +207,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["admin"],
@@ -217,6 +231,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["admin"],
@@ -240,6 +255,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["employee"],
@@ -263,6 +279,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["employee"],
@@ -286,6 +303,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["beta"],
@@ -309,6 +327,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["beta"],
@@ -332,6 +351,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["gold"],
@@ -355,6 +375,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["gold"],
@@ -388,6 +409,7 @@ class TestFeatureFlag(unittest.TestCase):
                 "id": "1",
                 "name": "test_feature",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_in": wanted_percent,
                 },
@@ -420,6 +442,7 @@ class TestFeatureFlag(unittest.TestCase):
                 "id": "1",
                 "name": "test_feature",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_out": wanted_percent,
                 },
@@ -443,6 +466,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "url": "test_state",
@@ -466,6 +490,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "url": "test_state",
@@ -488,6 +513,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "users": ["Gary"],
@@ -510,6 +536,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "users": ["ALL_UPPERCASE"],
@@ -527,6 +554,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "users": ["dave", "gary"],
@@ -545,6 +573,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "users": [""],
@@ -562,6 +591,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "users": ["dave", "joe"],
@@ -580,6 +610,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subreddits": ["WTF"],
@@ -597,6 +628,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subreddits": ["wtf"],
@@ -614,6 +646,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subreddits": ["WTF", "aww"],
@@ -632,6 +665,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subreddits": [],
@@ -649,6 +683,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subreddits": ["aww", "wtfoobar"],
@@ -667,6 +702,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subdomains": ["BETA"],
@@ -684,6 +720,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subdomains": ["beta"],
@@ -701,6 +738,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subdomains": ["www", "beta"],
@@ -719,6 +757,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subdomains": [],
@@ -741,6 +780,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "subdomains": ["www", "betanauts"],
@@ -760,6 +800,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "off",
             "feature": {
                 "targeting": {
@@ -780,6 +821,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "on",
             "feature": {
                 "targeting": {
@@ -808,6 +850,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": "1",
             "name": "test_feature",
             "type": "basic",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "targeting": {
                     "user_flags": ["admin"],

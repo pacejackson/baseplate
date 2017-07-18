@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import hashlib
+import time
 
 from .._compat import long
 
@@ -46,6 +47,15 @@ def feature_flag_from_config(config):
     feature_type = config["type"]
     owner = config.get("owner")
     feature_id = config.get("id")
+    expiration = config["expires"]
+    if int(time.time()) > expiration:
+        logger.warning(
+            "Found expired feature flag <%s> that is owned by <%s>. Please "
+            "clean up.",
+            name,
+            owner,
+        )
+        return GloballyDisabledFeatureFlag()
     override = config.get("global_override")
     if override == GLOBALLY_ON:
         logger.warning(

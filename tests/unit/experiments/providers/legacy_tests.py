@@ -468,6 +468,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_in": 100,
                 },
@@ -504,6 +505,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_in": 100,
                 },
@@ -540,6 +542,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_in": 100,
                 },
@@ -575,6 +578,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_out": 100,
                 },
@@ -610,6 +614,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_out": 100,
                 },
@@ -648,6 +653,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_out": 100,
                 },
@@ -685,6 +691,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_out": 100,
                 },
@@ -720,6 +727,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_out": 100,
                     "percent_logged_in": 100,
@@ -752,6 +760,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {
                     "percent_logged_out": 100,
                     "percent_logged_in": 100,
@@ -783,6 +792,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "type": "basic",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "feature": {},
             },
             "experiment": {
