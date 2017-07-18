@@ -20,6 +20,9 @@ from baseplate.file_watcher import FileWatcher
 from .... import mock
 
 
+THIRTY_DAYS_SEC = 60 * 60 * 24 * 30
+
+
 def get_users(num_users, logged_in=True):
     users = []
     for i in range(num_users):
@@ -61,6 +64,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     "control_1": 10,
@@ -81,6 +85,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     "control_1": 10,
@@ -96,6 +101,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "seed": "test-seed",
                 "variants": {
@@ -119,6 +125,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     "control_1": 10,
@@ -158,6 +165,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     "control_1": 10,
@@ -212,6 +220,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "control_only",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     "control_1": 10,
@@ -224,6 +233,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "three_variants",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     'remove_vote_counters': 5,
@@ -237,6 +247,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "three_variants_more",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     'remove_vote_counters': 15.6,
@@ -287,6 +298,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "fifty_fifty",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     'control_1': 50,
@@ -299,6 +311,7 @@ class TestLegacyExperiment(unittest.TestCase):
             "name": "almost_fifty_fifty",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "variants": {
                     'control_1': 49,
@@ -450,6 +463,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "id": "1",
                 "name": "test",
@@ -484,6 +498,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": True,
             "feature": {
                 "id": "1",
@@ -519,6 +534,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
             "feature": {
                 "id": "1",
@@ -554,6 +570,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "id": "1",
                 "name": "test",
@@ -588,6 +605,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "id": "1",
                 "name": "test",
@@ -625,6 +643,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "id": "1",
                 "name": "test",
@@ -660,6 +679,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
             "feature": {
                 "id": "1",
@@ -695,6 +715,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "id": "1",
                 "name": "test",
@@ -725,6 +746,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
             "feature": {
                 "id": "1",
@@ -756,6 +778,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "feature": {
                 "id": "1",
                 "name": "test",
@@ -783,6 +806,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "page": True,
                 "content_flags": {
@@ -823,6 +847,7 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "page": True,
                 "content_flags": {

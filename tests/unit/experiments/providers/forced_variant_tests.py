@@ -4,10 +4,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import time
 import unittest
 
 from baseplate.experiments.providers import experiment_from_config
 from baseplate.experiments.providers.forced_variant import ForcedVariantExperiment
+
+THIRTY_DAYS_SEC = 60 * 60 * 24 * 30
 
 
 class TestForcedVariantExperiment(unittest.TestCase):
@@ -18,6 +21,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "unknown",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
                 "id": "1",
                 "name": "test",
@@ -41,6 +45,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "foo",
             "experiment": {
                 "id": "1",
@@ -63,6 +68,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "legacy",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
             "experiment": {
                 "id": "1",

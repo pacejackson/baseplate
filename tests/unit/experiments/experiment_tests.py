@@ -14,6 +14,8 @@ from baseplate.file_watcher import FileWatcher, WatchedFileNotAvailableError
 
 from ... import mock
 
+THIRTY_DAYS_SEC = 60 * 60 * 24 * 30
+
 
 class TestExperiments(unittest.TestCase):
 
@@ -30,6 +32,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "legacy",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
                     "id": "1",
                     "name": "test",
@@ -60,6 +63,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "legacy",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
                     "id": "1",
                     "name": "test",
@@ -90,6 +94,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "legacy",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
                     "id": "1",
                     "name": "test",
@@ -141,6 +146,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "legacy",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
                     "id": "1",
                     "name": "test",

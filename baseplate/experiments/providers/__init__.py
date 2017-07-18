@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import time
 
 from .forced_variant import ForcedVariantExperiment
 from .legacy import LegacyExperiment
@@ -57,6 +58,21 @@ def experiment_from_config(config):
     name = config["name"]
     owner = config.get("owner")
     experiment_config = config["experiment"]
+    expiration = config["expires"]
+    if int(time.time()) > expiration:
+        logger.warning(
+            "Found an expired experiment <%s:%s> that is owned by <%s>. "
+            "Please clean up.",
+            experiment_id,
+            name,
+            owner,
+        )
+        return ExperimentManager(
+            id=experiment_id,
+            name=name,
+            owner=owner,
+            experiment=ForcedVariantExperiment(None),
+        )
     override = config.get("global_override")
     enabled = config.get("enabled", True)
     if override:
