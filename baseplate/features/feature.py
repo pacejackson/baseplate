@@ -176,6 +176,9 @@ class FeatureFlag(FeatureFlagInterface):
             "percent_logged_out": Optional value.  The percentage of logged
                 out users that you want to enable the feature for as an integer
                 0 - 100.  If this is not set, it defaults to 0.
+            "targeting": Optional targeting configuration dict.
+            "seed": Optional value, overrides the seed for this feature.  If
+                this is not set, `name` is used as the seed.
         }
 
         :param str id: The ID of the feature from the base config.
