@@ -202,7 +202,7 @@ class FeatureFlag(FeatureFlagInterface):
                        _fullname.
         :return int -- a bucket, 0 <= bucket < self.num_buckets
         """
-        # Mix the feature name in with the seed so the same users don't get
+        # Mix the feature seed with the bucket_val so the same users don't get
         # selected for ramp-ups for every feature.
         seed_bytes = ("%s%s" % (self.seed, bucket_val)).encode()
         hashed = hashlib.sha1(seed_bytes)

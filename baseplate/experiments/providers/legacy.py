@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class LegacyExperiment(ExperimentInterface):
+    """ A "legacy", r2-style experiment. Should log bucketing events to the
+    event pipeline.
+    """
 
     EXPERIMENT_TYPES = {"page", "user"}
 
@@ -63,8 +66,6 @@ class LegacyExperiment(ExperimentInterface):
         return True
 
     def variant(self, user, content, url_flags):
-        """ Determine which variant of this experiment, if any, is active. """
-
         if url_flags and self.url_variants:
             for flag in url_flags:
                 if flag in self.url_variants:
@@ -85,18 +86,13 @@ class LegacyExperiment(ExperimentInterface):
     def _calculate_bucket(self, bucket_val):
         """Sort something into one of self.num_buckets buckets.
 
-        :param seed -- a string used for shifting the deterministic bucketing
+        :param bucket_val -- a string used for shifting the deterministic bucketing
                        algorithm.  In most cases, this will be an Account's
                        _fullname.
-        :param feature_seed -- a unique id used for shifting the
-                        deterministic bucketing algorithm when we want to
-                        bucket a fresh group of users without changing the
-                        feature flag name. This should be a unique id that
-                        has not previously been in this experiment.
         :return int -- a bucket, 0 <= bucket < self.num_buckets
         """
-        # Mix the feature name in with the seed so the same users don't get
-        # selected for ramp-ups for every feature.
+        # Mix the experiment seed with the bucket_val so the same users don't
+        # get bucketed into the same bucket for each experiment.
         seed_bytes = ("%s%s" % (self.seed, bucket_val)).encode()
         hashed = hashlib.sha1(seed_bytes)
         bucket = long(hashed.hexdigest(), 16) % self.num_buckets
