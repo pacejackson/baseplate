@@ -21,10 +21,7 @@ class TestExperiments(unittest.TestCase):
         super(TestExperiments, self).setUp()
         self.event_queue = mock.Mock(spec=EventQueue)
         self.mock_filewatcher = mock.Mock(spec=FileWatcher)
-        self.session = SessionContext(
-            session_id="1",
-            user=User(name="gary", id="t2_1", created=int(time.time())),
-        )
+        self.user = User(name="gary", id="t2_1", created=int(time.time()))
 
     def test_that_we_only_send_bucketing_event_once(self):
         self.mock_filewatcher.get_data.return_value = {
@@ -51,9 +48,9 @@ class TestExperiments(unittest.TestCase):
             return_value="active",
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", self.session)
+            experiments.variant("test", user_id=self.user.id)
             self.assertEqual(self.event_queue.put.call_count, 1)
-            experiments.variant("test", self.session)
+            experiments.variant("test", user_id=self.user.id)
             self.assertEqual(self.event_queue.put.call_count, 1)
 
     def test_that_bucketing_events_not_sent_if_no_variant(self):
@@ -81,9 +78,9 @@ class TestExperiments(unittest.TestCase):
             return_value=None,
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", self.session)
+            experiments.variant("test", user_id=self.user.id)
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", self.session)
+            experiments.variant("test", user_id=self.user.id)
             self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_experiment_disables(self):
@@ -114,27 +111,27 @@ class TestExperiments(unittest.TestCase):
             return_value=False,
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", self.session)
+            experiments.variant("test", user_id=self.user.id)
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", self.session)
+            experiments.variant("test", user_id=self.user.id)
             self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_cant_load_config(self):
         self.mock_filewatcher.get_data.side_effect = WatchedFileNotAvailableError("path", None)  # noqa
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", self.session)
+        experiments.variant("test", user_id=self.user.id)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", self.session)
+        experiments.variant("test", user_id=self.user.id)
         self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_cant_parse_config(self):
         self.mock_filewatcher.get_data.side_effect = TypeError()
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", self.session)
+        experiments.variant("test", user_id=self.user.id)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", self.session)
+        experiments.variant("test", user_id=self.user.id)
         self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_cant_find_experiment(self):
@@ -157,7 +154,7 @@ class TestExperiments(unittest.TestCase):
         }
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", self.session)
+        experiments.variant("test", user_id=self.user.id)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", self.session)
+        experiments.variant("test", user_id=self.user.id)
         self.assertEqual(self.event_queue.put.call_count, 0)

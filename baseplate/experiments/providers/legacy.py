@@ -51,6 +51,7 @@ class LegacyExperiment(ExperimentInterface):
                 for that value.
             "seed": Optional value, overrides the seed for this experiment.  If
                 this is not set, `name` is used as the seed.
+            "content_flags":
         }
 
         :param str name: The name of the experiment from the base config.
@@ -85,16 +86,20 @@ class LegacyExperiment(ExperimentInterface):
     def should_log_bucketing(self):
         return True
 
-    def variant(self, user, content, url_flags):
+    def variant(self, **args):
+        url_flags = args.get("url_flags")
         if url_flags and self.url_variants:
             for flag in url_flags:
                 if flag in self.url_variants:
                     return self.url_variants[flag]
 
         if self.type == "user":
-            return self._get_user_experiment_variant(user)
+            return self._get_user_experiment_variant(args["user_id"])
         elif self.type == "page":
-            return self._get_page_experiment_variant(content)
+            return self._get_page_experiment_variant(
+                args["content_id"],
+                args["content_type"],
+            )
         else:
             logger.warning(
                 "Experiment <%s> with unkown type %s",
@@ -197,32 +202,32 @@ class LegacyExperiment(ExperimentInterface):
         else:
             return None
 
-    def _get_page_experiment_variant(self, content):
-        bucket = self._get_thing_bucket(content)
+    def _get_page_experiment_variant(self, content_id, content_type):
+        bucket = self._get_thing_bucket(content_id, content_type)
         if bucket is None:
             return None
         return self._choose_variant(bucket)
 
-    def _get_user_experiment_variant(self, user):
-        if user.id is None:
+    def _get_user_experiment_variant(self, user_id):
+        if user_id is None:
             return None
 
-        bucket = self._calculate_bucket(user.id)
+        bucket = self._calculate_bucket(user_id)
         return self._choose_variant(bucket)
 
-    def _get_thing_bucket(self, content):
-        if content.id is None:
+    def _get_thing_bucket(self, content_id, content_type):
+        if content_id is None:
             return None
 
         # If we've restricted the experiment to certain page types, make sure
         # the request is for one of those
         if (self.content_flags.get('subreddit_only', False) and
-                content.type != 'subreddit'):
+                content_type != 'subreddit'):
             return None
 
         if (self.content_flags.get('link_only', False) and
-                (content.type != 'link' and content.type != 'comment')):
+                (content_type != 'link' and content_type != 'comment')):
             # We treat comment permalink pages like general comments pages
             return None
 
-        return self._calculate_bucket(content.id)
+        return self._calculate_bucket(content_id)

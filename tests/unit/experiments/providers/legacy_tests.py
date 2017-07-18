@@ -348,7 +348,14 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
             session = SessionContext("1", user, url="https://www.reddit.com")
             session._url_properties = session_vars
             experiments = self.factory.make_object_for_context(None, None)
-            variant = experiments.variant(config["name"], session)
+            variant = experiments.variant(
+                config["name"],
+                user_id=user.id,
+                user_name=user.name,
+                logged_in=user.logged_in,
+                content_id=session.content.id,
+                content_type=session.content.type,
+            )
             if variant:
                 counter[variant] += 1
 
@@ -404,7 +411,16 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "subdomain": None,
             }
             experiments = self.factory.make_object_for_context(None, None)
-            self.assertIs(experiments.variant(config["name"], session), None)
+            self.assertIs(
+                experiments.variant(
+                    config["name"],
+                    user_id=user.id,
+                    user_name=user.name,
+                    logged_in=user.logged_in,
+                    content_id=content.id,
+                    content_type=content.type,
+                ), None
+            )
 
     def assert_no_page_experiment(self, user, pages, config):
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
@@ -417,7 +433,16 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
                 "subdomain": None,
             }
             experiments = self.factory.make_object_for_context(None, None)
-            self.assertIs(experiments.variant(config["name"], session), None)
+            self.assertIs(
+                experiments.variant(
+                    config["name"],
+                    user_id=user.id,
+                    user_name=user.name,
+                    logged_in=user.logged_in,
+                    content_id=page.id,
+                    content_type=page.type,
+                ), None
+            )
 
     def test_loggedin_experiment(self):
         config = {

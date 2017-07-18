@@ -30,10 +30,11 @@ class ExperimentsContextFactory(ContextFactory):
 
 class Experiments(object):
 
-    def __init__(self, config_watcher, event_queue):
+    def __init__(self, config_watcher, event_queue=None, session=None):
         self._config_watcher = config_watcher
         self._event_queue = event_queue
         self._cache = {}
+        self._session = session
 
     def _get_config(self, name):
         try:
@@ -52,26 +53,21 @@ class Experiments(object):
             logger.warning("Could not load experiment config: %r", name)
             return
 
-    def variant(self, name, session_context):
+    def variant(self, name, **args):
         if name not in self._cache:
-            self._cache[name] = self._bucket(name, session_context)
+            self._cache[name] = self._bucket(name, **args)
         return self._cache[name]
 
-    def _bucket(self, name, session_context):
+    def _bucket(self, name, **args):
         config = self._get_config(name)
         if not config:
             return None
 
         experiment = experiment_from_config(config)
-        targeting = TargetingParams.from_session_context(session_context)
-        if not experiment.enabled(user=session_context.user, targeting=targeting):
+        if not experiment.enabled(**args):
             return None
 
-        variant = experiment.variant(
-            user=session_context.user,
-            content=session_context.content,
-            url_flags=session_context.url_params.get("feature", []),
-        )
+        variant = experiment.variant(**args)
 
         should_log_bucketing_event = experiment.should_log_bucketing()
 
@@ -79,19 +75,20 @@ class Experiments(object):
             should_log_bucketing_event = False
 
         if should_log_bucketing_event:
-            self._log_bucketing_event(session_context, experiment, variant)
+            self._log_bucketing_event(experiment, variant)
 
         return variant
 
-    def _log_bucketing_event(self, session_context, experiment, variant):
+    def _log_bucketing_event(self, experiment, variant):
 
         if not self._event_queue:
             return
 
         event_type = "bucket"
         event = Event("bucketing_events", event_type)
-        for field, value in iteritems(session_context.event_params()):
-            event.set_field(field, value)
+        if self._session:
+            for field, value in iteritems(self._session.event_params()):
+                event.set_field(field, value)
         event.set_field("variant", variant)
         event.set_field("experiment_id", experiment.id)
         event.set_field("experiment_name", experiment.name)

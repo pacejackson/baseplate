@@ -2,7 +2,7 @@
 class ExperimentInterface(object):
     """ Base interface for feature flag objects. """
 
-    def variant(self, user, content, url_flags):
+    def variant(self, **args):
         """ Determine which variant, if any, of this experiment is active.
 
         :param baseplate.features.User user: The user you want to run the

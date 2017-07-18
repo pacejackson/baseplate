@@ -10,7 +10,7 @@ class ForcedVariantExperiment(ExperimentInterface):
     def __init__(self, variant):
         self._variant = variant
 
-    def variant(self, *a, **kw):
+    def variant(self, **args):
         return self._variant
 
     def should_log_bucketing(self):

@@ -82,7 +82,7 @@ def feature_flag_from_config(config):
 class FeatureFlagInterface(object):
     """ Base interface for feature flag objects. """
 
-    def enabled(self, user, targeting):
+    def enabled(self, **args):
         """ Return if the feature should be enabled for the given user and
         targeting values.
 
@@ -97,14 +97,14 @@ class FeatureFlagInterface(object):
 class GloballyEnabledFeatureFlag(FeatureFlagInterface):
     """ A feature flag that is always enabled. """
 
-    def enabled(self, user, targeting):
+    def enabled(self, **args):
         return True
 
 
 class GloballyDisabledFeatureFlag(FeatureFlagInterface):
     """ A feature flag that is always disabled. """
 
-    def enabled(self, user, targeting):
+    def enabled(self, **args):
         return False
 
 
@@ -212,65 +212,65 @@ class FeatureFlag(FeatureFlagInterface):
         bucket = long(hashed.hexdigest(), 16) % self.num_buckets
         return bucket
 
-    def enabled(self, user, targeting):
+    def enabled(self, **args):
         # first, test if the feature is enabled off of the targeting
         # parameters
-        if self._is_targeting_enabled(user, targeting):
+        if self._is_targeting_enabled(**args):
             return True
 
         # next, test if the feature is enabled fractionally
-        if self._is_percent_enabled(user):
+        if self._is_percent_enabled(args["user_id"], args["logged_in"]):
             return True
 
         # default to off.
         return False
 
-    def _is_targeting_enabled(self, user, targeting):
+    def _is_targeting_enabled(self, **args):
 
-        for feature in targeting.url_features:
+        for feature in args.get("url_features", []):
             if feature == self.targeting.url_flag:
                 return True
 
-        for user_flag in self.targeting.user_flags:
-            if user_flag in user.flags:
+        for user_flag in args.get("user_flags", []):
+            if user_flag in self.targeting.user_flags:
                 return True
 
-        if self.targeting.newer_than and user.created < self.targeting.newer_than:
+        if self.targeting.newer_than and args["user_created"] > self.targeting.newer_than:
             return True
 
         if (
             self.targeting.users and
-            user.logged_in and
-            user.name.lower() in self.targeting.users
+            args.get("logged_in") and
+            args["user_name"].lower() in self.targeting.users
         ):
             return True
 
         if (
             self.targeting.subreddits and
-            targeting.subreddit and
-            targeting.subreddit.lower() in self.targeting.subreddits
+            args.get("subreddit") and
+            args.get("subreddit").lower() in self.targeting.subreddits
         ):
             return True
 
         if (
             self.targeting.subdomains and
-            targeting.subdomain and
-            targeting.subdomain.lower() in self.targeting.subdomains
+            args.get("subdomain") and
+            args.get("subdomain").lower() in self.targeting.subdomains
         ):
             return True
 
         if (
             self.targeting.oauth_clients and
-            targeting.oauth_client and
-            targeting.oauth_client.lower() in self.targeting.oauth_clients
+            args.get("oauth_client_id") and
+            args.get("oauth_client_id").lower() in self.targeting.oauth_clients
         ):
             return True
 
-    def _is_percent_enabled(self, user):
-        if user.id is None:
+    def _is_percent_enabled(self, user_id, logged_in):
+        if user_id is None:
             return False
 
-        if user.logged_in:
+        if logged_in:
             percentage = self.percent_logged_in
         else:
             percentage = self.percent_logged_out
@@ -281,7 +281,7 @@ class FeatureFlag(FeatureFlagInterface):
             return False
         if percentage >= 100:
             return True
-        bucket = self._calculate_bucket(user.id)
+        bucket = self._calculate_bucket(user_id)
         scaled_percent = bucket / (self.num_buckets / 100)
         if scaled_percent < percentage:
             return True

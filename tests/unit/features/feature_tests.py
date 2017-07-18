@@ -34,10 +34,7 @@ class TestFeatureFlags(unittest.TestCase):
     def setUp(self):
         super(TestFeatureFlags, self).setUp()
         self.mock_filewatcher = mock.Mock(spec=FileWatcher)
-        self.session = SessionContext(
-            session_id="1",
-            user=User(name="gary", id="t2_beef", created=int(time.time())),
-        )
+        self.user =User(name="gary", id="t2_beef", created=int(time.time()))
 
     def test_enabled_matches_expected(self):
         self.mock_filewatcher.get_data.return_value = {
@@ -52,19 +49,19 @@ class TestFeatureFlags(unittest.TestCase):
 
         with mock.patch("baseplate.features.feature.FeatureFlag.enabled") as p:
             p.return_value = True
-            self.assertTrue(features.enabled("test", self.session))
+            self.assertTrue(features.enabled("test", user_id=self.user.id))
             p.return_value = False
-            self.assertFalse(features.enabled("test", self.session))
+            self.assertFalse(features.enabled("test", user_id=self.user.id))
 
     def test_false_if_cant_load_config(self):
         self.mock_filewatcher.get_data.side_effect = WatchedFileNotAvailableError("path", None)  # noqa
         features = FeatureFlags(self.mock_filewatcher)
-        self.assertFalse(features.enabled("test", self.session))
+        self.assertFalse(features.enabled("test", user_id=self.user.id))
 
     def test_false_if_cant_parse_config(self):
         self.mock_filewatcher.get_data.side_effect = TypeError()
         features = FeatureFlags(self.mock_filewatcher)
-        self.assertFalse(features.enabled("test", self.session))
+        self.assertFalse(features.enabled("test", user_id=self.user.id))
 
     def test_false_if_cant_find_feature(self):
         self.mock_filewatcher.get_data.return_value = {
@@ -76,7 +73,7 @@ class TestFeatureFlags(unittest.TestCase):
             },
         }
         features = FeatureFlags(self.mock_filewatcher)
-        self.assertFalse(features.enabled("test", self.session))
+        self.assertFalse(features.enabled("test", user_id=self.user.id))
 
 
 class TestFeatureFlagFromConfig(unittest.TestCase):
@@ -100,7 +97,7 @@ class TestFeatureFlagFromConfig(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.assertTrue(isinstance(feature_flag, GloballyDisabledFeatureFlag))
-        self.assertFalse(feature_flag.enabled(None, None))
+        self.assertFalse(feature_flag.enabled())
 
     def test_global_override_off(self):
         cfg = {
@@ -112,7 +109,7 @@ class TestFeatureFlagFromConfig(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.assertTrue(isinstance(feature_flag, GloballyDisabledFeatureFlag))
-        self.assertFalse(feature_flag.enabled(None, None))
+        self.assertFalse(feature_flag.enabled())
 
     def test_global_override_on(self):
         cfg = {
@@ -124,7 +121,7 @@ class TestFeatureFlagFromConfig(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.assertTrue(isinstance(feature_flag, GloballyEnabledFeatureFlag))
-        self.assertTrue(feature_flag.enabled(None, None))
+        self.assertTrue(feature_flag.enabled())
 
 
 class TestFeatureFlag(unittest.TestCase):
@@ -132,7 +129,6 @@ class TestFeatureFlag(unittest.TestCase):
     def setUp(self):
         super(TestFeatureFlag, self).setUp()
         self.user = User(name="gary", id="t2_beef", created=int(time.time()))
-        self.targeting = TargetingParams()
 
     def _assert_fuzzy_percent_true(self, results, percent):
         stats = collections.Counter(results)
@@ -176,7 +172,10 @@ class TestFeatureFlag(unittest.TestCase):
             "global_override": "on",
         }
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
 
     def test_disabled(self):
         cfg = {
@@ -186,7 +185,10 @@ class TestFeatureFlag(unittest.TestCase):
             "global_override": "off",
         }
         feature_flag = feature_flag_from_config(cfg)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
 
     def test_admin_enabled(self):
         cfg = {
@@ -201,7 +203,15 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.user.flags.add("admin")
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
     def test_admin_disabled(self):
         cfg = {
@@ -216,7 +226,15 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.assertNotIn("admin", self.user.flags)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
     def test_employee_enabled(self):
         cfg = {
@@ -231,7 +249,15 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.user.flags.add("employee")
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
     def test_employee_disabled(self):
         cfg = {
@@ -246,7 +272,15 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.assertNotIn("employee", self.user.flags)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
     def test_beta_enabled(self):
         cfg = {
@@ -261,7 +295,15 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.user.flags.add("beta")
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
     def test_beta_disabled(self):
         cfg = {
@@ -276,7 +318,15 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.assertNotIn("beta", self.user.flags)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
     def test_gold_enabled(self):
         cfg = {
@@ -291,7 +341,15 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.user.flags.add("gold")
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
     def test_gold_disabled(self):
         cfg = {
@@ -305,8 +363,16 @@ class TestFeatureFlag(unittest.TestCase):
             },
         }
         feature_flag = feature_flag_from_config(cfg)
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
         self.assertNotIn("gold", self.user.flags)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
     def test_percent_loggedin(self):
         num_users = 2000
@@ -328,7 +394,10 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             }
             feature_flag = feature_flag_from_config(cfg)
-            return (feature_flag.enabled(x, self.targeting) for x in users)
+            return (
+                feature_flag.enabled(user_id=x.id, logged_in=x.logged_in) for
+                x in users
+            )
 
         self.assertFalse(any(simulate_percent_loggedin(0)))
         self.assertTrue(all(simulate_percent_loggedin(100)))
@@ -357,7 +426,10 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             }
             feature_flag = feature_flag_from_config(cfg)
-            return (feature_flag.enabled(x, self.targeting) for x in users)
+            return (
+                feature_flag.enabled(user_id=x.id, logged_in=x.logged_in) for
+                x in users
+            )
 
         self.assertFalse(any(simulate_percent_loggedout(0)))
         self.assertTrue(all(simulate_percent_loggedout(100)))
@@ -378,11 +450,17 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.url_features.append("test_state")
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
-        self.targeting.url_features.append("x")
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            url_features=["test_state"],
+        ))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            url_features=["test_state", "x"],
+        ))
 
     def test_url_disabled(self):
         cfg = {
@@ -395,11 +473,16 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.assertEqual(self.targeting.url_features, [])
         feature_flag = feature_flag_from_config(cfg)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
-        self.targeting.url_features.append("x")
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            url_features=["x"],
+        ))
 
     def test_user_in(self):
         cfg = {
@@ -413,7 +496,11 @@ class TestFeatureFlag(unittest.TestCase):
             },
         }
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_name=self.user.name,
+        ))
 
         all_uppercase = User(
             name="ALL_UPPERCASE",
@@ -431,7 +518,11 @@ class TestFeatureFlag(unittest.TestCase):
             },
         }
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(all_uppercase, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=all_uppercase.id,
+            logged_in=all_uppercase.logged_in,
+            user_name=all_uppercase.name,
+        ))
 
         cfg = {
             "id": "1",
@@ -444,7 +535,11 @@ class TestFeatureFlag(unittest.TestCase):
             },
         }
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_name=self.user.name,
+        ))
 
     def test_user_not_in(self):
         cfg = {
@@ -458,7 +553,11 @@ class TestFeatureFlag(unittest.TestCase):
             },
         }
         feature_flag = feature_flag_from_config(cfg)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_name=self.user.name,
+        ))
 
         cfg = {
             "id": "1",
@@ -471,7 +570,11 @@ class TestFeatureFlag(unittest.TestCase):
             },
         }
         feature_flag = feature_flag_from_config(cfg)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_name=self.user.name,
+        ))
 
     def test_subreddit_in(self):
         cfg = {
@@ -484,9 +587,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subreddit = "WTF"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subreddit="WTF"
+        ))
 
         cfg = {
             "id": "1",
@@ -498,9 +604,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subreddit = "WTF"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subreddit="WTF"
+        ))
 
         cfg = {
             "id": "1",
@@ -512,9 +621,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subreddit = "WTF"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subreddit="WTF"
+        ))
 
     def test_subreddit_not_in(self):
         cfg = {
@@ -527,9 +639,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subreddit = "WTF"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subreddit="WTF",
+        ))
 
         cfg = {
             "id": "1",
@@ -541,9 +656,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subreddit = "WTF"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subreddit="WTF",
+        ))
 
     def test_subdomain_in(self):
         cfg = {
@@ -556,9 +674,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subdomain = "beta"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subdomain="beta",
+        ))
 
         cfg = {
             "id": "1",
@@ -570,9 +691,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subdomain = "BETA"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subdomain="BETA",
+        ))
 
         cfg = {
             "id": "1",
@@ -584,9 +708,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subdomain = "beta"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subdomain="beta",
+        ))
 
     def test_subdomain_not_in(self):
         cfg = {
@@ -599,11 +726,17 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subdomain = "beta"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
-        self.targeting.subdomain = ""
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subdomain="beta",
+        ))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subdomain="",
+        ))
 
         cfg = {
             "id": "1",
@@ -615,9 +748,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        self.targeting.subdomain = "beta"
         feature_flag = feature_flag_from_config(cfg)
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            subdomain="beta",
+        ))
 
     def test_multiple(self):
         # is_admin, globally off should still be False
@@ -634,7 +770,11 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = feature_flag_from_config(cfg)
         self.user.flags.add("admin")
-        self.assertFalse(feature_flag.enabled(self.user, self.targeting))
+        self.assertFalse(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
         # globally on but not admin should still be True
         cfg = {
@@ -652,9 +792,17 @@ class TestFeatureFlag(unittest.TestCase):
         if "admin" in self.user.flags:
             self.user.flags.remove("admin")
         self.assertNotIn("admin", self.user.flags)
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
         self.user.flags.add("admin")
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
 
         # no URL but admin should still be True
         cfg = {
@@ -669,6 +817,9 @@ class TestFeatureFlag(unittest.TestCase):
             },
         }
         feature_flag = feature_flag_from_config(cfg)
-        self.assertEqual(self.targeting.url_features, [])
         self.user.flags.add("admin")
-        self.assertTrue(feature_flag.enabled(self.user, self.targeting))
+        self.assertTrue(feature_flag.enabled(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_flags=self.user.flags,
+        ))
