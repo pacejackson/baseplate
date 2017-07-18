@@ -20,6 +20,29 @@ GLOBALLY_OFF = "off"
 
 
 def feature_flag_from_config(config):
+    """ Parse the feature flag configuration dict and return an instance of a
+    class that implements the baseplate.features.feature.FeatureFlagInterface
+    interface.  The specific class depends on the "type" of feature flag and
+    whether any global overrides are set.
+
+    The config dict is expected to have the following format:
+
+    {
+        "id": The id of the feature as a string
+        "name": The name of the feature as a string
+        "type": The type of feature.  Only "basic" is currently supported
+        "feature": The config dict for the specific feature, this will vary
+            depending on the type of feature
+        "global_override": Optional value that can be set to "on" or "off".
+            If set to "on", we will return a feature flag that is always
+            enabled and if set to "off", we will return a feature flag that
+            is always disabled.  Any other values are ignored.
+    }
+
+    :param dict config: A feature flag configuration dict.
+    :rtype baseplate.features.feature.FeatureFlagInterface:
+    :returns: A feature flag object that implements the FetureFlag Interface.
+    """
     name = config["name"]
     feature_type = config["type"]
     owner = config.get("owner")
@@ -58,24 +81,36 @@ def feature_flag_from_config(config):
 
 
 class FeatureFlagInterface(object):
+    """ Base interface for feature flag objects. """
 
     def enabled(self, user, targeting):
+        """ Return if the feature should be enabled for the given user and
+        targeting values.
+
+        :param baseplate.features.User user:
+        :param baseplate.featurs.TargetingParams targeting:
+        :rtype bool:
+        :return: True if the feature should be enabled, False if not.
+        """
         raise NotImplementedError
 
 
 class GloballyEnabledFeatureFlag(FeatureFlagInterface):
+    """ A feature flag that is always enabled. """
 
     def enabled(self, user, targeting):
         return True
 
 
 class GloballyDisabledFeatureFlag(FeatureFlagInterface):
+    """ A feature flag that is always disabled. """
 
     def enabled(self, user, targeting):
         return False
 
 
 class FeatureTargeting(object):
+    """ Targeting configuration for a "basic" FeatureFlag. """
 
     EXPECTED_USER_FLAGS = {"admin", "sponsor", "employee", "beta", "gold"}
 
@@ -114,9 +149,8 @@ class FeatureTargeting(object):
 
 
 class FeatureFlag(FeatureFlagInterface):
-    """A FeatureState is the state of a feature and its condition in the world.
-
-    It determines if this feature is enabled given the world provided.
+    """ A "basic" feature flag.  Provides targeting against discrete values and
+    a percentage of users based on ID.
     """
 
     def __init__(self, id, name, owner, seed, percent_logged_in,
@@ -132,6 +166,25 @@ class FeatureFlag(FeatureFlagInterface):
 
     @classmethod
     def from_config(cls, id, name, owner, config):
+        """ Parse the config dict and return a new FeatureFlag object.
+
+        The config dict is expected to have the following format:
+
+        {
+            "percent_logged_in": Optional value.  The percentage of logged
+                in users that you want to enable the feature for as an integer
+                0 - 100.  If this is not set, it defaults to 0.
+            "percent_logged_out": Optional value.  The percentage of logged
+                out users that you want to enable the feature for as an integer
+                0 - 100.  If this is not set, it defaults to 0.
+        }
+
+        :param str id: The ID of the feature from the base config.
+        :param str name: The name of the feature from the base config.
+        :param str owner: The owner of the feature from the base config.
+        :param dict config: The "feature" config dict from the base config.
+        :rtype: baseplate.features.feature.FeatureFlag
+        """
         return cls(
             id=id,
             name=name,
@@ -143,12 +196,12 @@ class FeatureFlag(FeatureFlagInterface):
         )
 
     def _calculate_bucket(self, bucket_val):
-        """Sort something into one of self.NUM_BUCKETS buckets.
+        """Sort something into one of self.num_buckets buckets.
 
         :param bucket_val -- a string used for shifting the deterministic bucketing
                        algorithm.  In most cases, this will be an Account's
                        _fullname.
-        :return int -- a bucket, 0 <= bucket < self.NUM_BUCKETS
+        :return int -- a bucket, 0 <= bucket < self.num_buckets
         """
         # Mix the feature name in with the seed so the same users don't get
         # selected for ramp-ups for every feature.
@@ -158,8 +211,6 @@ class FeatureFlag(FeatureFlagInterface):
         return bucket
 
     def enabled(self, user, targeting):
-        """ Determine if a feature is enabled. """
-
         # first, test if the feature is enabled off of the targeting
         # parameters
         if self._is_targeting_enabled(user, targeting):
