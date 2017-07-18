@@ -11,7 +11,6 @@ from .providers import experiment_from_config
 from .._compat import iteritems
 from ..context import ContextFactory
 from ..events import Event, EventTooLargeError, EventQueueFullError
-from ..features import TargetingParams
 from ..file_watcher import FileWatcher, WatchedFileNotAvailableError
 
 

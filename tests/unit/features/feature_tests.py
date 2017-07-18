@@ -14,7 +14,6 @@ from baseplate.features import (
     FeatureFlags,
     SessionContext,
     User,
-    TargetingParams,
 )
 from baseplate.features.feature import (
     feature_flag_from_config,

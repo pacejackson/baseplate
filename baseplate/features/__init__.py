@@ -139,29 +139,6 @@ class SessionContext(object):
         return event_params
 
 
-class TargetingParams(object):
-
-    def __init__(self, url_features=None, subreddit=None, subdomain=None,
-                 oauth_client=None):
-        self.url_features = url_features or []
-        self.subreddit = subreddit
-        self.subdomain = subdomain
-        self.oauth_client = oauth_client
-
-    @classmethod
-    def from_session_context(cls, session_context):
-        url_features = None
-        url_params = session_context.url_params
-        if url_params and "feature" in url_params:
-            url_features = url_params["feature"]
-        return cls(
-            url_features=url_features,
-            subreddit=session_context.subreddit,
-            subdomain=session_context.subdomain,
-            oauth_client=session_context.oauth_client_id,
-        )
-
-
 class Content(object):
 
     def __init__(self, id, type):
