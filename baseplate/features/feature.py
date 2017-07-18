@@ -13,8 +13,7 @@ from .._compat import long
 logger = logging.getLogger(__name__)
 
 
-# Special values for globally enabled properties - no need to interrogate
-# the world for these values.
+# Special values for globally enabled properties
 GLOBALLY_ON = "on"
 GLOBALLY_OFF = "off"
 
