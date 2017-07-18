@@ -14,7 +14,7 @@ from baseplate.events import EventQueue
 from baseplate.experiments import ExperimentsContextFactory
 from baseplate.experiments.providers import experiment_from_config
 from baseplate.experiments.providers.legacy import LegacyExperiment
-from baseplate.features import Content, User, SessionContext
+from baseplate.features import Content, User
 from baseplate.file_watcher import FileWatcher
 
 from .... import mock
@@ -355,19 +355,19 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
         counter = collections.Counter()
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for target in targets:
-            session_vars = {target_var: target}
-            session_vars.update(static_vars)
-            user = session_vars.pop("user")
-            session = SessionContext("1", user, url="https://www.reddit.com")
-            session._url_properties = session_vars
+            experiment_vars = {target_var: target}
+            experiment_vars.update(static_vars)
+            user = experiment_vars.pop("user")
+            content = experiment_vars.pop("content")
             experiments = self.factory.make_object_for_context(None, None)
             variant = experiments.variant(
                 config["name"],
                 user_id=user.id,
                 user_name=user.name,
                 logged_in=user.logged_in,
-                content_id=session.content.id,
-                content_type=session.content.type,
+                content_id=content.id,
+                content_type=content.type,
+                **experiment_vars
             )
             if variant:
                 counter[variant] += 1
@@ -416,13 +416,6 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
     def assert_no_user_experiment(self, users, content, config):
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for user in users:
-            session = SessionContext("1", user)
-            session._url_properties = {
-                "content": content,
-                "url_params": {},
-                "subreddit": None,
-                "subdomain": None,
-            }
             experiments = self.factory.make_object_for_context(None, None)
             self.assertIs(
                 experiments.variant(
@@ -438,13 +431,6 @@ class TestSimulatedLegacyExperiments(unittest.TestCase):
     def assert_no_page_experiment(self, user, pages, config):
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for page in pages:
-            session = SessionContext("1", user)
-            session._url_properties = {
-                "content": page,
-                "url_params": {},
-                "subreddit": None,
-                "subdomain": None,
-            }
             experiments = self.factory.make_object_for_context(None, None)
             self.assertIs(
                 experiments.variant(

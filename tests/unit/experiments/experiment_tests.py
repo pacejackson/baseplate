@@ -9,7 +9,7 @@ import unittest
 
 from baseplate.events import EventQueue
 from baseplate.experiments import Experiments
-from baseplate.features import Content, SessionContext, User
+from baseplate.features import Content, User
 from baseplate.file_watcher import FileWatcher, WatchedFileNotAvailableError
 
 from ... import mock

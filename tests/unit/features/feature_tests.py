@@ -10,11 +10,7 @@ import time
 import unittest
 
 from baseplate._compat import long, range
-from baseplate.features import (
-    FeatureFlags,
-    SessionContext,
-    User,
-)
+from baseplate.features import FeatureFlags, User
 from baseplate.features.feature import (
     feature_flag_from_config,
     FeatureFlag,
