@@ -11,7 +11,7 @@ import unittest
 from baseplate._compat import iteritems, long, range
 from baseplate.events import EventQueue
 from baseplate.experiments import ExperimentsContextFactory
-from baseplate.experiments.providers import experiment_from_config
+from baseplate.experiments.providers import parse_experiment
 from baseplate.experiments.providers.r2 import R2Experiment
 from baseplate.features import Content, User
 from baseplate.file_watcher import FileWatcher
@@ -71,7 +71,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         }
-        experiment_manager = experiment_from_config(cfg)
+        experiment_manager = parse_experiment(cfg)
         self.assertTrue(isinstance(
             experiment_manager._experiment,
             R2Experiment,
@@ -92,7 +92,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         }
-        experiment = experiment_from_config(cfg)._experiment
+        experiment = parse_experiment(cfg)._experiment
         experiment.num_buckets = 1000
         self.assertEqual(experiment._calculate_bucket("t2_1"), long(236))
         cfg = {
@@ -109,7 +109,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         }
-        seeded_experiment = experiment_from_config(cfg)._experiment
+        seeded_experiment = parse_experiment(cfg)._experiment
         self.assertNotEqual(seeded_experiment.seed, experiment.seed)
         self.assertIsNot(seeded_experiment.seed, None)
         seeded_experiment.num_buckets = 1000
@@ -132,7 +132,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         }
-        experiment = experiment_from_config(cfg)._experiment
+        experiment = parse_experiment(cfg)._experiment
 
         # Give ourselves enough users that we can get some reasonable amount of
         # precision when checking amounts per bucket.
@@ -173,7 +173,7 @@ class TestR2Experiment(unittest.TestCase):
                 "seed": "itscoldintheoffice",
             }
         }
-        experiment = experiment_from_config(cfg)._experiment
+        experiment = parse_experiment(cfg)._experiment
 
         # Give ourselves enough users that we can get some reasonable amount of
         # precision when checking amounts per bucket.
@@ -214,7 +214,7 @@ class TestR2Experiment(unittest.TestCase):
                                    msg='bucket: %s' % bucket)
 
     def test_choose_variant(self):
-        control_only = experiment_from_config({
+        control_only = parse_experiment({
             "id": "1",
             "name": "control_only",
             "owner": "test",
@@ -227,7 +227,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         })._experiment
-        three_variants = experiment_from_config({
+        three_variants = parse_experiment({
             "id": "1",
             "name": "three_variants",
             "owner": "test",
@@ -241,7 +241,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         })._experiment
-        three_variants_more = experiment_from_config({
+        three_variants_more = parse_experiment({
             "id": "1",
             "name": "three_variants_more",
             "owner": "test",
@@ -292,7 +292,7 @@ class TestR2Experiment(unittest.TestCase):
 
         # Test boundary conditions around the maximum percentage allowed for
         # variants.
-        fifty_fifty = experiment_from_config({
+        fifty_fifty = parse_experiment({
             "id": "1",
             "name": "fifty_fifty",
             "owner": "test",
@@ -305,7 +305,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         })._experiment
-        almost_fifty_fifty = experiment_from_config({
+        almost_fifty_fifty = parse_experiment({
             "id": "1",
             "name": "almost_fifty_fifty",
             "owner": "test",
@@ -374,7 +374,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         # this test will still probabilistically fail, but we can mitigate
         # the likeliness of that happening
         error_bar_percent = 100. / math.sqrt(num_experiments)
-        experiment = experiment_from_config(config)._experiment
+        experiment = parse_experiment(config)._experiment
         for variant, percent in iteritems(experiment.variants):
             # Our actual percentage should be within our expected percent
             # (expressed as a part of 100 rather than a fraction of 1)

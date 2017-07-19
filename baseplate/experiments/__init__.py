@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import json
 import logging
 
-from .providers import experiment_from_config
+from .providers import parse_experiment
 from .._compat import iteritems
 from ..context import ContextFactory
 from ..events import Event, EventTooLargeError, EventQueueFullError
@@ -69,7 +69,7 @@ class Experiments(object):
         if not config:
             return None
 
-        experiment = experiment_from_config(config)
+        experiment = parse_experiment(config)
         if not experiment.enabled(**kwargs):
             variant = None
         else:

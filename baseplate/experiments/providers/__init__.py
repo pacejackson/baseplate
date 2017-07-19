@@ -51,7 +51,7 @@ class ExperimentManager(object):
         return event_params
 
 
-def experiment_from_config(config):
+def parse_experiment(config):
     experiment_type = config["type"].lower()
     experiment_id = config["id"]
     name = config["name"]
@@ -114,7 +114,7 @@ def experiment_from_config(config):
             owner=owner,
             enabled=enabled,
             feature_flag=feature_flag,
-            experiment=R2Experiment.from_config(name, experiment_config),
+            experiment=R2Experiment.from_dict(name, experiment_config),
         )
     else:
         logger.warning(
@@ -133,4 +133,4 @@ def experiment_from_config(config):
         )
 
 
-__all__ = ["experiment_from_config"]
+__all__ = ["parse_experiment"]

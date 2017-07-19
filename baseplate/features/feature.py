@@ -76,7 +76,7 @@ def feature_flag_from_config(config):
     feature_config = config["feature"]
 
     if feature_type == "basic":
-        return FeatureFlag.from_config(feature_id, name, owner, feature_config)
+        return FeatureFlag.from_dict(feature_id, name, owner, feature_config)
     else:
         logger.warning(
             "Found an feature <%s> with an unknown feature type <%s> "
@@ -134,7 +134,7 @@ class FeatureTargeting(object):
         self.url_flag = url_flag
 
     @classmethod
-    def from_config(cls, config):
+    def from_dict(cls, config):
         user_flags = config.get("user_flags", [])
         user_flags = set([flag.lower() for flag in user_flags])
         users = config.get("users", [])
@@ -173,7 +173,7 @@ class FeatureFlag(FeatureFlagInterface):
         self.targeting = targeting
 
     @classmethod
-    def from_config(cls, id, name, owner, config):
+    def from_dict(cls, id, name, owner, config):
         """ Parse the config dict and return a new FeatureFlag object.
 
         The config dict is expected to have the following format:
@@ -203,7 +203,7 @@ class FeatureFlag(FeatureFlagInterface):
             seed=config.get('seed'),
             percent_logged_in=config.get('percent_logged_in', 0),
             percent_logged_out=config.get('percent_logged_out', 0),
-            targeting=FeatureTargeting.from_config(config.get('targeting', {}))
+            targeting=FeatureTargeting.from_dict(config.get('targeting', {}))
         )
 
     def _calculate_bucket(self, bucket_val):

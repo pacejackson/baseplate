@@ -35,7 +35,7 @@ class R2Experiment(ExperimentInterface):
         self.url_variants = url_variants
 
     @classmethod
-    def from_config(cls, name, config):
+    def from_dict(cls, name, config):
         """ Parse the config dict and return a new R2Experiment object.
 
         The config dict is expected to have the following format:

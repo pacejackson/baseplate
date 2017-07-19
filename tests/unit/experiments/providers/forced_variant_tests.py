@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import time
 import unittest
 
-from baseplate.experiments.providers import experiment_from_config
+from baseplate.experiments.providers import parse_experiment
 from baseplate.experiments.providers.forced_variant import ForcedVariantExperiment
 
 THIRTY_DAYS_SEC = 60 * 60 * 24 * 30
@@ -30,7 +30,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
                 }
             }
         }
-        experiment = experiment_from_config(cfg)
+        experiment = parse_experiment(cfg)
         self.assertTrue(isinstance(
             experiment._experiment,
             ForcedVariantExperiment,
@@ -55,7 +55,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
                 }
             }
         }
-        experiment = experiment_from_config(cfg)
+        experiment = parse_experiment(cfg)
         self.assertTrue(isinstance(
             experiment._experiment,
             ForcedVariantExperiment),
@@ -78,7 +78,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
                 }
             }
         }
-        experiment = experiment_from_config(cfg)
+        experiment = parse_experiment(cfg)
         self.assertTrue(isinstance(
             experiment._experiment,
             ForcedVariantExperiment),
