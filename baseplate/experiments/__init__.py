@@ -52,21 +52,21 @@ class Experiments(object):
             logger.warning("Could not load experiment config: %r", name)
             return
 
-    def variant(self, name, **args):
+    def variant(self, name, **kwargs):
         if name not in self._cache:
-            self._cache[name] = self._bucket(name, **args)
+            self._cache[name] = self._bucket(name, **kwargs)
         return self._cache[name]
 
-    def _bucket(self, name, **args):
+    def _bucket(self, name, **kwargs):
         config = self._get_config(name)
         if not config:
             return None
 
         experiment = experiment_from_config(config)
-        if not experiment.enabled(**args):
+        if not experiment.enabled(**kwargs):
             return None
 
-        variant = experiment.variant(**args)
+        variant = experiment.variant(**kwargs)
 
         should_log_bucketing_event = experiment.should_log_bucketing()
 

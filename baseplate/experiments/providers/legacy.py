@@ -86,7 +86,7 @@ class LegacyExperiment(ExperimentInterface):
     def should_log_bucketing(self):
         return True
 
-    def variant(self, **args):
+    def variant(self, **kwargs):
         url_flags = args.get("url_flags")
         if url_flags and self.url_variants:
             for flag in url_flags:

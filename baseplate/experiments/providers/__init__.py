@@ -25,20 +25,20 @@ class ExperimentManager(object):
         self._enabled = enabled
         self._feature_flag = feature_flag
 
-    def enabled(self, **args):
+    def enabled(self, **kwargs):
         if not self._enabled:
             return False
 
         if self._feature_flag is None:
             return True
 
-        if self._feature_flag.enabled(**args):
+        if self._feature_flag.enabled(**kwargs):
             return True
 
         return False
 
-    def variant(self, **args):
-        return self._experiment.variant(**args)
+    def variant(self, **kwargs):
+        return self._experiment.variant(**kwargs)
 
     def should_log_bucketing(self):
         return self._experiment.should_log_bucketing()

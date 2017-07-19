@@ -92,7 +92,7 @@ def feature_flag_from_config(config):
 class FeatureFlagInterface(object):
     """ Base interface for feature flag objects. """
 
-    def enabled(self, **args):
+    def enabled(self, **kwargs):
         """ Return if the feature should be enabled for the given user and
         targeting values.
 
@@ -107,14 +107,14 @@ class FeatureFlagInterface(object):
 class GloballyEnabledFeatureFlag(FeatureFlagInterface):
     """ A feature flag that is always enabled. """
 
-    def enabled(self, **args):
+    def enabled(self, **kwargs):
         return True
 
 
 class GloballyDisabledFeatureFlag(FeatureFlagInterface):
     """ A feature flag that is always disabled. """
 
-    def enabled(self, **args):
+    def enabled(self, **kwargs):
         return False
 
 
@@ -222,10 +222,10 @@ class FeatureFlag(FeatureFlagInterface):
         bucket = long(hashed.hexdigest(), 16) % self.num_buckets
         return bucket
 
-    def enabled(self, **args):
+    def enabled(self, **kwargs):
         # first, test if the feature is enabled off of the targeting
         # parameters
-        if self._is_targeting_enabled(**args):
+        if self._is_targeting_enabled(**kwargs):
             return True
 
         # next, test if the feature is enabled fractionally
@@ -235,7 +235,7 @@ class FeatureFlag(FeatureFlagInterface):
         # default to off.
         return False
 
-    def _is_targeting_enabled(self, **args):
+    def _is_targeting_enabled(self, **kwargs):
 
         for feature in args.get("url_features", []):
             if feature == self.targeting.url_flag:

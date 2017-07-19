@@ -72,7 +72,7 @@ class FeatureFlags(object):
             logger.warning("Could not load experiment config: %r", name)
             return
 
-    def enabled(self, name, **args):
+    def enabled(self, name, **kwargs):
         """ Check if the feature flag with the given name is enabled for the
         provider user and targeting parameters.
 
@@ -87,7 +87,7 @@ class FeatureFlags(object):
         if not config:
             return False
         feature = feature_flag_from_config(config)
-        return feature.enabled(name, **args)
+        return feature.enabled(name, **kwargs)
 
 
 __all__ = ["FeatureFlagsContextFactory"]
