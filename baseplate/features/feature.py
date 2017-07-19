@@ -275,6 +275,8 @@ class FeatureFlag(FeatureFlagInterface):
         ):
             return True
 
+        return False
+
     def _is_percent_enabled(self, user_id, logged_in):
         if user_id is None:
             return False
@@ -294,6 +296,8 @@ class FeatureFlag(FeatureFlagInterface):
         scaled_percent = bucket / (self.num_buckets / 100)
         if scaled_percent < percentage:
             return True
+
+        return False
 
 
 __all__ = ["feature_flag_from_config"]
