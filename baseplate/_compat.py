@@ -20,8 +20,8 @@ if sys.version_info.major == 3:  # pragma: nocover
     long = int
     import builtins
 
-    def iteritems(d, **kw):
-        return iter(d.items(**kw))
+    def iteritems(d):
+        return iter(d.items())
 
 else:  # pragma: nocover
     import ConfigParser as configparser
@@ -36,8 +36,8 @@ else:  # pragma: nocover
     BytesIO = StringIO
     import __builtin__ as builtins
 
-    def iteritems(d, **kw):
-        return d.iteritems(**kw)
+    def iteritems(d):
+        return d.iteritems()
 
 
 __all__ = [
