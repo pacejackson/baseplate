@@ -86,18 +86,18 @@ class LegacyExperiment(ExperimentInterface):
         return True
 
     def variant(self, **kwargs):
-        url_flags = args.get("url_flags")
+        url_flags = kwargs.get("url_flags")
         if url_flags and self.url_variants:
             for flag in url_flags:
                 if flag in self.url_variants:
                     return self.url_variants[flag]
 
         if self.type == "user":
-            return self._get_user_experiment_variant(args["user_id"])
+            return self._get_user_experiment_variant(kwargs["user_id"])
         elif self.type == "page":
             return self._get_page_experiment_variant(
-                args["content_id"],
-                args["content_type"],
+                kwargs["content_id"],
+                kwargs["content_type"],
             )
         else:
             logger.warning(

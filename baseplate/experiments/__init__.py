@@ -51,42 +51,61 @@ class Experiments(object):
             logger.warning("Could not load experiment config: %r", name)
             return
 
-    def variant(self, name, **kwargs):
-        if name not in self._cache:
-            self._cache[name] = self._bucket(name, **kwargs)
-        return self._cache[name]
+    def variant(self, name, bucket_event_override=None,
+                extra_event_params=None, **kwargs):
+        cache_key = "%s:%s" % (name, str(sorted(iteritems(kwargs))))
+        if cache_key not in self._cache:
+            self._cache[cache_key] = self._bucket(
+                name=name,
+                bucket_event_override=bucket_event_override,
+                extra_event_params=extra_event_params,
+                **kwargs
+            )
+        return self._cache[cache_key]
 
-    def _bucket(self, name, **kwargs):
+    def _bucket(self, name, bucket_event_override, extra_event_params,
+                **kwargs):
         config = self._get_config(name)
         if not config:
             return None
 
         experiment = experiment_from_config(config)
         if not experiment.enabled(**kwargs):
-            return None
-
-        variant = experiment.variant(**kwargs)
+            variant = None
+        else:
+            variant = experiment.variant(**kwargs)
 
         should_log_bucketing_event = experiment.should_log_bucketing()
 
         if variant is None:
             should_log_bucketing_event = False
 
+        if bucket_event_override is True:
+            should_log_bucketing = True
+        elif bucket_event_override is False:
+            should_log_bucketing = False
+
         if should_log_bucketing_event:
-            self._log_bucketing_event(experiment, variant)
+            self._log_bucketing_event(experiment, variant, extra_event_params)
 
         return variant
 
-    def _log_bucketing_event(self, experiment, variant):
+    def _log_bucketing_event(self, experiment, variant, extra_event_params=None):
 
         if not self._event_queue:
             return
 
+        extra_event_params = extra_event_params or {}
+
         event_type = "bucket"
         event = Event("bucketing_events", event_type)
+        for field, value in iteritems(extra_event_params):
+            event.set_field(field, value)
+
         if self._session:
             for field, value in iteritems(self._session.event_params()):
                 event.set_field(field, value)
+
         event.set_field("variant", variant)
         event.set_field("experiment_id", experiment.id)
         event.set_field("experiment_name", experiment.name)

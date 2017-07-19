@@ -228,7 +228,7 @@ class FeatureFlag(FeatureFlagInterface):
             return True
 
         # next, test if the feature is enabled fractionally
-        if self._is_percent_enabled(args["user_id"], args["logged_in"]):
+        if self._is_percent_enabled(kwargs["user_id"], kwargs["logged_in"]):
             return True
 
         # default to off.
@@ -236,42 +236,42 @@ class FeatureFlag(FeatureFlagInterface):
 
     def _is_targeting_enabled(self, **kwargs):
 
-        for feature in args.get("url_features", []):
+        for feature in kwargs.get("url_features", []):
             if feature == self.targeting.url_flag:
                 return True
 
-        for user_flag in args.get("user_flags", []):
+        for user_flag in kwargs.get("user_flags", []):
             if user_flag in self.targeting.user_flags:
                 return True
 
-        if self.targeting.newer_than and args["user_created"] > self.targeting.newer_than:
+        if self.targeting.newer_than and kwargs["user_created"] > self.targeting.newer_than:
             return True
 
         if (
             self.targeting.users and
-            args.get("logged_in") and
-            args["user_name"].lower() in self.targeting.users
+            kwargs.get("logged_in") and
+            kwargs["user_name"].lower() in self.targeting.users
         ):
             return True
 
         if (
             self.targeting.subreddits and
-            args.get("subreddit") and
-            args.get("subreddit").lower() in self.targeting.subreddits
+            kwargs.get("subreddit") and
+            kwargs.get("subreddit").lower() in self.targeting.subreddits
         ):
             return True
 
         if (
             self.targeting.subdomains and
-            args.get("subdomain") and
-            args.get("subdomain").lower() in self.targeting.subdomains
+            kwargs.get("subdomain") and
+            kwargs.get("subdomain").lower() in self.targeting.subdomains
         ):
             return True
 
         if (
             self.targeting.oauth_clients and
-            args.get("oauth_client_id") and
-            args.get("oauth_client_id").lower() in self.targeting.oauth_clients
+            kwargs.get("oauth_client_id") and
+            kwargs.get("oauth_client_id").lower() in self.targeting.oauth_clients
         ):
             return True
 
