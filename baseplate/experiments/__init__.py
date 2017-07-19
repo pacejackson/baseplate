@@ -81,9 +81,9 @@ class Experiments(object):
             should_log_bucketing_event = False
 
         if bucket_event_override is True:
-            should_log_bucketing = True
+            should_log_bucketing_event = True
         elif bucket_event_override is False:
-            should_log_bucketing = False
+            should_log_bucketing_event = False
 
         if should_log_bucketing_event:
             self._log_bucketing_event(experiment, variant, extra_event_params)
