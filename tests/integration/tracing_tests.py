@@ -47,6 +47,12 @@ class TracingTests(unittest.TestCase):
         self.server_span_observer = server_span_observer
 
     def setUp(self):
+        self.thread_start_patch = mock.patch(
+            "threading.Thread.start",
+            autospec=True,
+        )
+        self.thread_start_patch.start()
+        self.addCleanup(self.thread_start_patch.stop)
         configurator = Configurator()
         configurator.add_route("example", "/example", request_method="GET")
         configurator.add_view(
