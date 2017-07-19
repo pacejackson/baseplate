@@ -30,7 +30,7 @@ class TestExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "owner": "test",
-                "type": "legacy",
+                "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
                     "id": "1",
@@ -46,7 +46,7 @@ class TestExperiments(unittest.TestCase):
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
 
         with mock.patch(
-            "baseplate.experiments.providers.legacy.LegacyExperiment.variant",
+            "baseplate.experiments.providers.r2.R2Experiment.variant",
             return_value="active",
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
@@ -61,7 +61,7 @@ class TestExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "owner": "test",
-                "type": "legacy",
+                "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
                     "id": "1",
@@ -77,7 +77,7 @@ class TestExperiments(unittest.TestCase):
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
 
         with mock.patch(
-            "baseplate.experiments.providers.legacy.LegacyExperiment.variant",
+            "baseplate.experiments.providers.r2.R2Experiment.variant",
             return_value=None,
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
@@ -92,7 +92,7 @@ class TestExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "owner": "test",
-                "type": "legacy",
+                "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
                     "id": "1",
@@ -108,10 +108,10 @@ class TestExperiments(unittest.TestCase):
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
 
         with mock.patch(
-            "baseplate.experiments.providers.legacy.LegacyExperiment.variant",
+            "baseplate.experiments.providers.r2.R2Experiment.variant",
             return_value="active",
         ), mock.patch(
-            "baseplate.experiments.providers.legacy.LegacyExperiment.should_log_bucketing",
+            "baseplate.experiments.providers.r2.R2Experiment.should_log_bucketing",
             return_value=False,
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
@@ -144,7 +144,7 @@ class TestExperiments(unittest.TestCase):
                 "id": "1",
                 "name": "test",
                 "owner": "test",
-                "type": "legacy",
+                "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
                     "id": "1",

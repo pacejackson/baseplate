@@ -13,7 +13,7 @@ from ..._compat import long, iteritems
 logger = logging.getLogger(__name__)
 
 
-class LegacyExperiment(ExperimentInterface):
+class R2Experiment(ExperimentInterface):
     """ A "legacy", r2-style experiment. Should log bucketing events to the
     event pipeline.
     """
@@ -36,7 +36,7 @@ class LegacyExperiment(ExperimentInterface):
 
     @classmethod
     def from_config(cls, name, config):
-        """ Parse the config dict and return a new LegacyExperiment object.
+        """ Parse the config dict and return a new R2Experiment object.
 
         The config dict is expected to have the following format:
 
@@ -55,7 +55,7 @@ class LegacyExperiment(ExperimentInterface):
 
         :param str name: The name of the experiment from the base config.
         :param dict config: The "experiment" config dict from the base config.
-        :rtype: baseplate.experiments.providers.legacy.LegacyExperiment
+        :rtype: baseplate.experiments.providers.r2.R2Experiment
         """
         if config.get('page'):
             experiment_type = "page"

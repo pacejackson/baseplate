@@ -43,7 +43,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             "id": "1",
             "name": "test",
             "owner": "test",
-            "type": "legacy",
+            "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "foo",
             "experiment": {
@@ -66,7 +66,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             "id": "1",
             "name": "test",
             "owner": "test",
-            "type": "legacy",
+            "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
             "experiment": {

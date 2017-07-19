@@ -7,7 +7,7 @@ import logging
 import time
 
 from .forced_variant import ForcedVariantExperiment
-from .legacy import LegacyExperiment
+from .r2 import R2Experiment
 from ...features.feature import feature_flag_from_config
 
 logger = logging.getLogger(__name__)
@@ -107,14 +107,14 @@ def experiment_from_config(config):
         feature_flag = feature_flag_from_config(config["feature"])
     else:
         feature_flag = None
-    if experiment_type == "legacy":
+    if experiment_type == "r2":
         return ExperimentManager(
             id=experiment_id,
             name=name,
             owner=owner,
             enabled=enabled,
             feature_flag=feature_flag,
-            experiment=LegacyExperiment.from_config(name, experiment_config),
+            experiment=R2Experiment.from_config(name, experiment_config),
         )
     else:
         logger.warning(

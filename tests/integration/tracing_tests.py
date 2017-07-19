@@ -82,7 +82,7 @@ class TracingTests(unittest.TestCase):
             self.assertEqual(len(span['annotations']), 2)
             self.assertEqual(span['parentId'], 0)
 
-    def test_configure_tracing_with_defaults_legacy_style(self):
+    def test_configure_tracing_with_defaults_r2_style(self):
         baseplate = Baseplate()
         self.assertEqual(0, len(baseplate.observers))
         baseplate.configure_tracing('test')

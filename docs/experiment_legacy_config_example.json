@@ -4,7 +4,7 @@
         "name": "experiment_name",
         "owner": "experiment_owner",
         "enabled": false,
-        "type": "legacy",
+        "type": "r2",
         "experiment": {
             "seed": "optional_seed_override",
             "page": false,
