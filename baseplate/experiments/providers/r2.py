@@ -35,7 +35,6 @@ class R2Experiment(ExperimentInterface):
         self.bucket_val = bucket_val
         self.newer_than = None
 
-
     @classmethod
     def from_dict(cls, name, config):
         """ Parse the config dict and return a new R2Experiment object.
