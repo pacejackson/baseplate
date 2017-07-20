@@ -10,10 +10,9 @@ import unittest
 
 from baseplate._compat import iteritems, long, range
 from baseplate.events import EventQueue
-from baseplate.experiments import ExperimentsContextFactory
+from baseplate.experiments import ExperimentsContextFactory, User, Content
 from baseplate.experiments.providers import parse_experiment
 from baseplate.experiments.providers.r2 import R2Experiment
-from baseplate.features import Content, User
 from baseplate.file_watcher import FileWatcher
 
 from .... import mock
@@ -471,8 +470,8 @@ class TestSimulatedR2Experiments(unittest.TestCase):
                 },
                 "overrides": {
                     "url_features": {
-                        "larger": "larger",
-                        "smaller": "smaller",
+                        "test_larger": "larger",
+                        "test_smaller": "smaller",
                     },
                 },
                 "variants": {
@@ -488,21 +487,21 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             content=Content(None, None),
             config=config,
             expected="larger",
-            url_features=["larger"],
+            url_features=["test_larger"],
         )
         self.assert_same_variant(
             users=get_users(2000),
             content=Content(None, None),
             config=config,
             expected="larger",
-            url_features=["larger", "test"],
+            url_features=["test_larger", "test"],
         )
         self.assert_same_variant(
             users=get_users(2000),
             content=Content(None, None),
             config=config,
             expected="smaller",
-            url_features=["smaller"],
+            url_features=["larger", "test_smaller"],
         )
         self.do_user_experiment_simulation(
             users=get_users(2000),

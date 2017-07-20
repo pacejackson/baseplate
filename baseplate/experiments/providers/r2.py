@@ -7,7 +7,7 @@ import logging
 import hashlib
 
 from .base import ExperimentInterface
-from ..._compat import long, iteritems
+from ..._compat import long, iteritems, string_types
 
 
 logger = logging.getLogger(__name__)
@@ -22,18 +22,25 @@ class R2Experiment(ExperimentInterface):
                  targeting=None, overrides=None, newer_than=None):
         targeting = targeting or {}
         overrides = overrides or {}
-        for _, v in iteritems(targeting):
-            assert isinstance(v, list)
-        for _, v in iteritems(overrides):
-            assert isinstance(v, dict)
+        self.targeting = {}
+        self.overrides = {}
+        for param, value in iteritems(targeting):
+            assert isinstance(param, string_types)
+            assert isinstance(value, list)
+            self.targeting[param.lower()] = [
+                v.lower() if isinstance(v, string_types) else v for v in value
+            ]
+        for param, value in iteritems(overrides):
+            assert isinstance(param, string_types)
+            assert isinstance(value, dict)
+            key = param.lower()
+            self.overrides[key] = {k.lower(): v for k, v in iteritems(value)}
         self.name = name
         self.seed = seed if seed else name
         self.num_buckets = 1000
         self.variants = variants
-        self.targeting = targeting
-        self.overrides = overrides
         self.bucket_val = bucket_val
-        self.newer_than = None
+        self.newer_than = newer_than
 
     @classmethod
     def from_dict(cls, name, config):
@@ -78,7 +85,7 @@ class R2Experiment(ExperimentInterface):
                 if not isinstance(values, (list, tuple)):
                     values = [values]
                 for value in values:
-                    override = self.overrides[override_arg].get(value)
+                    override = self.overrides[override_arg].get(value.lower())
                     if override is not None:
                         return override
         return None
@@ -102,21 +109,22 @@ class R2Experiment(ExperimentInterface):
         return False
 
     def variant(self, **kwargs):
-        if self.bucket_val not in kwargs:
+        lower_kwargs = {k.lower(): v for k, v in iteritems(kwargs)}
+        if self.bucket_val not in lower_kwargs:
             raise ValueError(
                 "Must specify %s in call to variant for experiment %s.",
                 self.bucket_val,
                 self.name,
             )
 
-        variant = self._check_overrides(**kwargs)
+        variant = self._check_overrides(**lower_kwargs)
         if variant is not None and variant in self.variants:
             return variant
 
-        if not self._is_enabled(**kwargs):
+        if not self._is_enabled(**lower_kwargs):
             return None
 
-        bucket = self._calculate_bucket(kwargs[self.bucket_val])
+        bucket = self._calculate_bucket(lower_kwargs[self.bucket_val])
         return self._choose_variant(bucket)
 
     def _calculate_bucket(self, bucket_val):
