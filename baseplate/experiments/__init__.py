@@ -95,9 +95,9 @@ class Experiments(object):
         if variant is None:
             should_log_bucketing_event = False
 
-        if bucketing_event_override == True:
+        if bucketing_event_override is True:
             should_log_bucketing_event = True
-        elif bucketing_event_override == False:
+        elif bucketing_event_override is False:
             should_log_bucketing_event = False
 
         if should_log_bucketing_event:
