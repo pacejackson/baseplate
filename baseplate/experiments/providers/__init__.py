@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 def parse_experiment(config):
     experiment_type = config["type"].lower()
     experiment_id = config["id"]
+    assert isinstance(experiment_id, int)
     name = config["name"]
     owner = config.get("owner")
     experiment_config = config["experiment"]
