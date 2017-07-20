@@ -54,6 +54,80 @@ class TestExperiments(unittest.TestCase):
             experiments.variant("test", user_id=self.user.id)
             self.assertEqual(self.event_queue.put.call_count, 1)
 
+    def test_that_bucketing_events_are_always_sent_with_override_true(self):
+        """Send bucketing events on invalid requests with override"""
+        self.mock_filewatcher.get_data.return_value = {
+            "test": {
+                "id": "1",
+                "name": "test",
+                "owner": "test",
+                "type": "r2",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "experiment": {
+                    "id": "1",
+                    "name": "test",
+                    "variants": {
+                        "active": 10,
+                        "control_1": 10,
+                        "control_2": 10,
+                    }
+                }
+            }
+        }
+        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        with mock.patch(
+            "baseplate.experiments.providers.r2.R2Experiment.variant",
+        ) as p:
+            p.return_value="active"
+            self.assertEqual(self.event_queue.put.call_count, 0)
+            experiments.variant("test", user_id=self.user.id,
+                                bucketing_event_override=True)
+            self.assertEqual(self.event_queue.put.call_count, 1)
+            experiments.variant("test", user_id=self.user.id,
+                                bucketing_event_override=True)
+            self.assertEqual(self.event_queue.put.call_count, 2)
+            p.return_value = None
+            experiments.variant("test", user_id=self.user.id,
+                                bucketing_event_override=True)
+            self.assertEqual(self.event_queue.put.call_count, 3)
+
+    def test_that_bucketing_events_are_not_sent_with_override_false(self):
+        """Don't send events when override is False"""
+        self.mock_filewatcher.get_data.return_value = {
+            "test": {
+                "id": "1",
+                "name": "test",
+                "owner": "test",
+                "type": "r2",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "experiment": {
+                    "id": "1",
+                    "name": "test",
+                    "variants": {
+                        "active": 10,
+                        "control_1": 10,
+                        "control_2": 10,
+                    }
+                }
+            }
+        }
+        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        with mock.patch(
+            "baseplate.experiments.providers.r2.R2Experiment.variant",
+        ) as p:
+            p.return_value="active"
+            self.assertEqual(self.event_queue.put.call_count, 0)
+            experiments.variant("test", user_id=self.user.id,
+                                bucketing_event_override=False)
+            self.assertEqual(self.event_queue.put.call_count, 0)
+            experiments.variant("test", user_id=self.user.id,
+                                bucketing_event_override=False)
+            self.assertEqual(self.event_queue.put.call_count, 0)
+            p.return_value = None
+            experiments.variant("test", user_id=self.user.id,
+                                bucketing_event_override=False)
+            self.assertEqual(self.event_queue.put.call_count, 0)
+
     def test_that_bucketing_events_not_sent_if_no_variant(self):
         self.mock_filewatcher.get_data.return_value = {
             "test": {

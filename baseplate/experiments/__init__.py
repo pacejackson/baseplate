@@ -69,20 +69,20 @@ class Experiments(object):
             logger.warning("Could not load experiment config: %r", name)
             return
 
-    def variant(self, name, bucket_event_override=None,
+    def variant(self, name, bucketing_event_override=None,
                 extra_event_params=None, **kwargs):
         cache_key = "%s:%s" % (name, str(sorted(iteritems(kwargs))))
-        if cache_key not in self._cache or bucket_event_override:
+        if cache_key not in self._cache or bucketing_event_override:
             self._cache[cache_key] = self._bucket(
                 name=name,
-                bucket_event_override=bucket_event_override,
+                bucketing_event_override=bucketing_event_override,
                 extra_event_params=extra_event_params,
                 **kwargs
             )
         return self._cache[cache_key]
 
-    def _bucket(self, name, bucket_event_override, extra_event_params,
-                **kwargs):
+    def _bucket(self, name, bucketing_event_override=None,
+                extra_event_params=None, **kwargs):
         config = self._get_config(name)
         if not config:
             return None
@@ -95,9 +95,9 @@ class Experiments(object):
         if variant is None:
             should_log_bucketing_event = False
 
-        if bucket_event_override is True:
+        if bucketing_event_override == True:
             should_log_bucketing_event = True
-        elif bucket_event_override is False:
+        elif bucketing_event_override == False:
             should_log_bucketing_event = False
 
         if should_log_bucketing_event:
