@@ -18,8 +18,9 @@ class R2Experiment(ExperimentInterface):
     event pipeline.
     """
 
-    def __init__(self, name, variants, seed=None, bucket_val="user_id",
-                 targeting=None, overrides=None, newer_than=None):
+    def __init__(self, id, name, owner, variants, seed=None,
+                 bucket_val="user_id", targeting=None, overrides=None,
+                 newer_than=None):
         targeting = targeting or {}
         overrides = overrides or {}
         self.targeting = {}
@@ -35,7 +36,9 @@ class R2Experiment(ExperimentInterface):
             assert isinstance(value, dict)
             key = param.lower()
             self.overrides[key] = {k.lower(): v for k, v in iteritems(value)}
+        self.id = id
         self.name = name
+        self.owner = owner
         self.seed = seed if seed else name
         self.num_buckets = 1000
         self.variants = variants
@@ -43,7 +46,7 @@ class R2Experiment(ExperimentInterface):
         self.newer_than = newer_than
 
     @classmethod
-    def from_dict(cls, name, config):
+    def from_dict(cls, id, name, owner, config):
         """ Parse the config dict and return a new R2Experiment object.
 
         The config dict is expected to have the following format:
@@ -66,7 +69,9 @@ class R2Experiment(ExperimentInterface):
         :rtype: baseplate.experiments.providers.r2.R2Experiment
         """
         return cls(
+            id=id,
             name=name,
+            owner=owner,
             variants=config.get("variants", {}),
             targeting=config.get("targeting"),
             overrides=config.get("overrides"),

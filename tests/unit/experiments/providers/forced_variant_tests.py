@@ -31,10 +31,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             }
         }
         experiment = parse_experiment(cfg)
-        self.assertTrue(isinstance(
-            experiment._experiment,
-            ForcedVariantExperiment,
-        ))
+        self.assertTrue(isinstance(experiment, ForcedVariantExperiment))
         self.assertIs(experiment.variant(), None)
         self.assertFalse(experiment.should_log_bucketing())
 
@@ -56,10 +53,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             }
         }
         experiment = parse_experiment(cfg)
-        self.assertTrue(isinstance(
-            experiment._experiment,
-            ForcedVariantExperiment),
-        )
+        self.assertTrue(isinstance(experiment, ForcedVariantExperiment))
 
     def test_disable_returns_forced_variant(self):
         cfg = {
@@ -79,10 +73,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             }
         }
         experiment = parse_experiment(cfg)
-        self.assertTrue(isinstance(
-            experiment._experiment,
-            ForcedVariantExperiment),
-        )
+        self.assertTrue(isinstance(experiment, ForcedVariantExperiment))
 
     def test_forced_variant(self):
         experiment = ForcedVariantExperiment("foo")

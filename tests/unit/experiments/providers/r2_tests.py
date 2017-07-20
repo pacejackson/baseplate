@@ -70,12 +70,9 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         }
-        experiment_manager = parse_experiment(cfg)
-        self.assertTrue(isinstance(
-            experiment_manager._experiment,
-            R2Experiment,
-        ))
-        self.assertTrue(experiment_manager.should_log_bucketing())
+        experiment = parse_experiment(cfg)
+        self.assertTrue(isinstance(experiment, R2Experiment))
+        self.assertTrue(experiment.should_log_bucketing())
 
     def test_calculate_bucket_value(self):
         cfg = {
@@ -91,7 +88,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         }
-        experiment = parse_experiment(cfg)._experiment
+        experiment = parse_experiment(cfg)
         experiment.num_buckets = 1000
         self.assertEqual(experiment._calculate_bucket("t2_1"), long(236))
         cfg = {
@@ -108,7 +105,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         }
-        seeded_experiment = parse_experiment(cfg)._experiment
+        seeded_experiment = parse_experiment(cfg)
         self.assertNotEqual(seeded_experiment.seed, experiment.seed)
         self.assertIsNot(seeded_experiment.seed, None)
         seeded_experiment.num_buckets = 1000
@@ -131,7 +128,7 @@ class TestR2Experiment(unittest.TestCase):
                 }
             }
         }
-        experiment = parse_experiment(cfg)._experiment
+        experiment = parse_experiment(cfg)
 
         # Give ourselves enough users that we can get some reasonable amount of
         # precision when checking amounts per bucket.
@@ -172,7 +169,7 @@ class TestR2Experiment(unittest.TestCase):
                 "seed": "itscoldintheoffice",
             }
         }
-        experiment = parse_experiment(cfg)._experiment
+        experiment = parse_experiment(cfg)
 
         # Give ourselves enough users that we can get some reasonable amount of
         # precision when checking amounts per bucket.
@@ -225,7 +222,7 @@ class TestR2Experiment(unittest.TestCase):
                     "control_2": 10,
                 }
             }
-        })._experiment
+        })
         three_variants = parse_experiment({
             "id": "1",
             "name": "three_variants",
@@ -239,7 +236,7 @@ class TestR2Experiment(unittest.TestCase):
                     'control_2': 5,
                 }
             }
-        })._experiment
+        })
         three_variants_more = parse_experiment({
             "id": "1",
             "name": "three_variants_more",
@@ -253,7 +250,7 @@ class TestR2Experiment(unittest.TestCase):
                     'control_2': 20,
                 }
             }
-        })._experiment
+        })
 
         counters = collections.defaultdict(collections.Counter)
         for bucket in range(control_only.num_buckets):
@@ -303,7 +300,7 @@ class TestR2Experiment(unittest.TestCase):
                     'control_2': 50,
                 }
             }
-        })._experiment
+        })
         almost_fifty_fifty = parse_experiment({
             "id": "1",
             "name": "almost_fifty_fifty",
@@ -316,7 +313,7 @@ class TestR2Experiment(unittest.TestCase):
                     'control_2': 51,
                 }
             }
-        })._experiment
+        })
         for bucket in range(fifty_fifty.num_buckets):
             for experiment in (fifty_fifty, almost_fifty_fifty):
                 variant = experiment._choose_variant(bucket)
@@ -373,7 +370,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         # this test will still probabilistically fail, but we can mitigate
         # the likeliness of that happening
         error_bar_percent = 100. / math.sqrt(num_experiments)
-        experiment = parse_experiment(config)._experiment
+        experiment = parse_experiment(config)
         for variant, percent in iteritems(experiment.variants):
             # Our actual percentage should be within our expected percent
             # (expressed as a part of 100 rather than a fraction of 1)

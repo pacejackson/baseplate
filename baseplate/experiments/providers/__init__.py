@@ -13,33 +13,6 @@ from .r2 import R2Experiment
 logger = logging.getLogger(__name__)
 
 
-class ExperimentManager(object):
-
-    def __init__(self, id, name, owner, experiment, enabled=True):
-        self.id = id,
-        self.name = name
-        self.owner = owner
-        self._experiment = experiment
-        self._enabled = enabled
-
-    def variant(self, **kwargs):
-        if self._enabled:
-            return self._experiment.variant(**kwargs)
-        else:
-            return None
-
-    def should_log_bucketing(self):
-        return self._experiment.should_log_bucketing()
-
-    def event_params(self):
-        event_params = {
-            "experiment_id": self.id,
-            "experiment_name": self.name,
-            "experiment_owner": self.owner,
-        }
-        return event_params
-
-
 def parse_experiment(config):
     experiment_type = config["type"].lower()
     experiment_id = config["id"]
@@ -55,12 +28,7 @@ def parse_experiment(config):
             name,
             owner,
         )
-        return ExperimentManager(
-            id=experiment_id,
-            name=name,
-            owner=owner,
-            experiment=ForcedVariantExperiment(None),
-        )
+        return ForcedVariantExperiment(None)
     enabled = config.get("enabled", True)
     if not enabled:
         logger.warning(
@@ -70,12 +38,7 @@ def parse_experiment(config):
             name,
             owner,
         )
-        return ExperimentManager(
-            id=experiment_id,
-            name=name,
-            owner=owner,
-            experiment=ForcedVariantExperiment(None),
-        )
+        return ForcedVariantExperiment(None)
     if "global_override" in config:
         override = config.get("global_override")
         logger.warning(
@@ -85,28 +48,21 @@ def parse_experiment(config):
             name,
             owner,
         )
-        return ExperimentManager(
-            id=experiment_id,
-            name=name,
-            owner=owner,
-            experiment=ForcedVariantExperiment(override)
-        )
+        return ForcedVariantExperiment(override)
 
     if experiment_type == "r2":
-        return ExperimentManager(
+        return R2Experiment.from_dict(
             id=experiment_id,
             name=name,
             owner=owner,
-            enabled=enabled,
-            experiment=R2Experiment.from_dict(name, experiment_config),
+            config=experiment_config,
         )
     elif experiment_type == "feature_flag":
-        return ExperimentManager(
+        return FeatureFlag.from_dict(
             id=experiment_id,
             name=name,
             owner=owner,
-            enabled=enabled,
-            experiment=FeatureFlag.from_dict(name, experiment_config),
+            config=experiment_config,
         )
     else:
         logger.warning(
@@ -117,12 +73,7 @@ def parse_experiment(config):
             experiment_type,
             owner,
         )
-        return ExperimentManager(
-            id=experiment_id,
-            name=name,
-            owner=owner,
-            experiment=ForcedVariantExperiment(None),
-        )
+        return ForcedVariantExperiment(None)
 
 
 __all__ = ["parse_experiment"]
