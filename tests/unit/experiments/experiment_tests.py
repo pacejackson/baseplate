@@ -26,13 +26,13 @@ class TestExperiments(unittest.TestCase):
     def test_that_we_only_send_bucketing_event_once(self):
         self.mock_filewatcher.get_data.return_value = {
             "test": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
-                    "id": "1",
+                    "id": 1,
                     "name": "test",
                     "variants": {
                         "active": 10,
@@ -58,14 +58,12 @@ class TestExperiments(unittest.TestCase):
         """Send bucketing events on invalid requests with override"""
         self.mock_filewatcher.get_data.return_value = {
             "test": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
-                    "id": "1",
-                    "name": "test",
                     "variants": {
                         "active": 10,
                         "control_1": 10,
@@ -95,14 +93,12 @@ class TestExperiments(unittest.TestCase):
         """Don't send events when override is False"""
         self.mock_filewatcher.get_data.return_value = {
             "test": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
-                    "id": "1",
-                    "name": "test",
                     "variants": {
                         "active": 10,
                         "control_1": 10,
@@ -131,14 +127,12 @@ class TestExperiments(unittest.TestCase):
     def test_that_bucketing_events_not_sent_if_no_variant(self):
         self.mock_filewatcher.get_data.return_value = {
             "test": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
-                    "id": "1",
-                    "name": "test",
                     "variants": {
                         "active": 10,
                         "control_1": 10,
@@ -162,14 +156,12 @@ class TestExperiments(unittest.TestCase):
     def test_that_bucketing_events_not_sent_if_experiment_disables(self):
         self.mock_filewatcher.get_data.return_value = {
             "test": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
-                    "id": "1",
-                    "name": "test",
                     "variants": {
                         "active": 10,
                         "control_1": 10,
@@ -214,14 +206,12 @@ class TestExperiments(unittest.TestCase):
     def test_that_bucketing_events_not_sent_if_cant_find_experiment(self):
         self.mock_filewatcher.get_data.return_value = {
             "other_test": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
                 "experiment": {
-                    "id": "1",
-                    "name": "test",
                     "variants": {
                         "active": 10,
                         "control_1": 10,

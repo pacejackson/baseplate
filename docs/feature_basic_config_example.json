@@ -1,6 +1,6 @@
 {
     "feature_name": {
-        "id": "feature_id",
+        "id": 1,
         "name": "feature_name",
         "owner": "feature_owner",
         "type": "basic",

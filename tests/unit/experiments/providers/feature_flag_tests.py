@@ -36,7 +36,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_admin_enabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -64,7 +64,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_admin_disabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -97,7 +97,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_employee_enabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -125,7 +125,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_employee_disabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -158,7 +158,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_beta_enabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -186,7 +186,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_beta_disabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -219,7 +219,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_gold_enabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -247,7 +247,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_gold_disabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -290,7 +290,7 @@ class TestFeatureFlag(unittest.TestCase):
 
         def simulate_percent_loggedin(wanted_percent):
             cfg = {
-                "id": "1",
+                "id": 1,
                 "name": "test_feature",
                 "type": "feature_flag",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -328,7 +328,7 @@ class TestFeatureFlag(unittest.TestCase):
 
         def simulate_percent_loggedout(wanted_percent):
             cfg = {
-                "id": "1",
+                "id": 1,
                 "name": "test_feature",
                 "type": "feature_flag",
                 "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -356,7 +356,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_url_enabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -385,7 +385,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_url_disabled(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -413,7 +413,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_user_in(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -459,7 +459,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_user_not_in(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -479,7 +479,7 @@ class TestFeatureFlag(unittest.TestCase):
             user_name=self.user.name,
         ), "active")
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -504,7 +504,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_subreddit_in(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -534,7 +534,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_subreddit_not_in(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -554,7 +554,7 @@ class TestFeatureFlag(unittest.TestCase):
             subreddit="wtf",
         ), "active")
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -579,7 +579,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_subdomain_in(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -609,7 +609,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_subdomain_not_in(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -634,7 +634,7 @@ class TestFeatureFlag(unittest.TestCase):
             subdomain="",
         ), "active")
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -660,7 +660,7 @@ class TestFeatureFlag(unittest.TestCase):
     def test_multiple(self):
         # is_admin, globally off should still be False
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -685,7 +685,7 @@ class TestFeatureFlag(unittest.TestCase):
 
         # globally on but not admin should still be True
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -714,7 +714,7 @@ class TestFeatureFlag(unittest.TestCase):
 
         # no URL but admin should still be True
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -750,7 +750,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_is_newer_than(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
@@ -774,7 +774,7 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_is_not_newer_than(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,

@@ -58,7 +58,7 @@ class TestR2Experiment(unittest.TestCase):
 
     def test_r2_type_returns_r2_experiment(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -76,7 +76,7 @@ class TestR2Experiment(unittest.TestCase):
 
     def test_calculate_bucket_value(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -92,7 +92,7 @@ class TestR2Experiment(unittest.TestCase):
         experiment.num_buckets = 1000
         self.assertEqual(experiment._calculate_bucket("t2_1"), long(236))
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -116,7 +116,7 @@ class TestR2Experiment(unittest.TestCase):
 
     def test_calculate_bucket(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -156,7 +156,7 @@ class TestR2Experiment(unittest.TestCase):
 
     def test_calculate_bucket_with_seed(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -211,7 +211,7 @@ class TestR2Experiment(unittest.TestCase):
 
     def test_choose_variant(self):
         control_only = parse_experiment({
-            "id": "1",
+            "id": 1,
             "name": "control_only",
             "owner": "test",
             "type": "r2",
@@ -224,7 +224,7 @@ class TestR2Experiment(unittest.TestCase):
             }
         })
         three_variants = parse_experiment({
-            "id": "1",
+            "id": 1,
             "name": "three_variants",
             "owner": "test",
             "type": "r2",
@@ -238,7 +238,7 @@ class TestR2Experiment(unittest.TestCase):
             }
         })
         three_variants_more = parse_experiment({
-            "id": "1",
+            "id": 1,
             "name": "three_variants_more",
             "owner": "test",
             "type": "r2",
@@ -289,7 +289,7 @@ class TestR2Experiment(unittest.TestCase):
         # Test boundary conditions around the maximum percentage allowed for
         # variants.
         fifty_fifty = parse_experiment({
-            "id": "1",
+            "id": 1,
             "name": "fifty_fifty",
             "owner": "test",
             "type": "r2",
@@ -302,7 +302,7 @@ class TestR2Experiment(unittest.TestCase):
             }
         })
         almost_fifty_fifty = parse_experiment({
-            "id": "1",
+            "id": 1,
             "name": "almost_fifty_fifty",
             "owner": "test",
             "type": "r2",
@@ -456,7 +456,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_experiment_overrides(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -508,7 +508,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_loggedin_experiment(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -538,7 +538,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_loggedin_experiment_explicit_enable(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -569,7 +569,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_loggedin_experiment_explicit_disable(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -600,7 +600,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_loggedout_experiment(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -630,7 +630,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_loggedout_experiment_missing_loids(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -663,7 +663,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_loggedout_experiment_explicit_enable(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -694,7 +694,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_loggedout_experiment_explicit_disable(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -725,7 +725,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_mixed_experiment(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -750,7 +750,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_mixed_experiment_disable(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -776,7 +776,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_not_loggedin_or_loggedout(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -799,7 +799,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_subreddit_experiment(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
@@ -840,7 +840,7 @@ class TestSimulatedR2Experiments(unittest.TestCase):
 
     def test_link_experiment(self):
         config = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",

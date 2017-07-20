@@ -16,13 +16,13 @@ class TestForcedVariantExperiment(unittest.TestCase):
 
     def test_unknown_type_returns_null_experiment(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "unknown",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "variants": {
                     "control_1": 10,
@@ -37,14 +37,14 @@ class TestForcedVariantExperiment(unittest.TestCase):
 
     def test_global_override_returns_forced_variant(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "global_override": "foo",
             "experiment": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "variants": {
                     "control_1": 10,
@@ -57,14 +57,14 @@ class TestForcedVariantExperiment(unittest.TestCase):
 
     def test_disable_returns_forced_variant(self):
         cfg = {
-            "id": "1",
+            "id": 1,
             "name": "test",
             "owner": "test",
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
             "experiment": {
-                "id": "1",
+                "id": 1,
                 "name": "test",
                 "variants": {
                     "control_1": 10,
