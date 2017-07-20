@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 
-class ExperimentInterface(object):
+class Experiment(object):
     """ Base interface for feature flag objects. """
 
     def variant(self, **kwargs):

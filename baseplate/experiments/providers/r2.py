@@ -6,14 +6,14 @@ from __future__ import unicode_literals
 import logging
 import hashlib
 
-from .base import ExperimentInterface
+from .base import Experiment
 from ..._compat import long, iteritems, string_types
 
 
 logger = logging.getLogger(__name__)
 
 
-class R2Experiment(ExperimentInterface):
+class R2Experiment(Experiment):
     """ A "legacy", r2-style experiment. Should log bucketing events to the
     event pipeline.
     """

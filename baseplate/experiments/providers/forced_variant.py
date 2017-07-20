@@ -3,10 +3,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from .base import ExperimentInterface
+from .base import Experiment
 
 
-class ForcedVariantExperiment(ExperimentInterface):
+class ForcedVariantExperiment(Experiment):
     """ An experiment that always returns a specified variant.  Should not log
     bucketing events to the event pipeline.
     """
