@@ -9,9 +9,10 @@ import time
 import unittest
 
 from baseplate._compat import long, range
-from baseplate.experiments import User
+from baseplate.events import EventQueue
+from baseplate.experiments import User, Experiments
 from baseplate.experiments.providers import parse_experiment
-from baseplate.file_watcher import FileWatcher, WatchedFileNotAvailableError
+from baseplate.file_watcher import FileWatcher
 
 from .... import mock
 
@@ -33,6 +34,37 @@ class TestFeatureFlag(unittest.TestCase):
         # _roughly_ `percent` should have been `True`
         diff = abs((float(stats[True]) / total) - (percent / 100.0))
         self.assertTrue(diff < 0.1)
+
+    def test_does_not_log_bucketing_event(self):
+        event_queue = mock.Mock(spec=EventQueue)
+        filewatcher = mock.Mock(spec=FileWatcher)
+        filewatcher.get_data.return_value = {
+            "test": {
+                "id": 1,
+                "name": "test",
+                "type": "feature_flag",
+                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "experiment": {
+                    "targeting": {
+                        "logged_in": [True, False],
+                    },
+                    "variants": {
+                        "active": 100,
+                    },
+                },
+            },
+        }
+        experiments = Experiments(filewatcher, event_queue)
+        self.assertEqual(event_queue.put.call_count, 0)
+        variant = experiments.variant(
+            "test",
+            user_id=self.user.id,
+            logged_in=True,
+        )
+        self.assertEqual(variant, "active")
+        self.assertEqual(event_queue.put.call_count, 0)
+        experiments.variant("test", user_id=self.user.id, logged_in=True)
+        self.assertEqual(event_queue.put.call_count, 0)
 
     def test_admin_enabled(self):
         cfg = {
