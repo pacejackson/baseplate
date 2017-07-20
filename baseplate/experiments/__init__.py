@@ -70,10 +70,7 @@ class Experiments(object):
             return None
 
         experiment = parse_experiment(config)
-        if not experiment.enabled(**kwargs):
-            variant = None
-        else:
-            variant = experiment.variant(**kwargs)
+        variant = experiment.variant(**kwargs)
 
         should_log_bucketing_event = experiment.should_log_bucketing()
 

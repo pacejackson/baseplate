@@ -8,36 +8,24 @@ import time
 
 from .forced_variant import ForcedVariantExperiment
 from .r2 import R2Experiment
-from ...features.feature import feature_flag_from_config
 
 logger = logging.getLogger(__name__)
 
 
 class ExperimentManager(object):
 
-    def __init__(self, id, name, owner, experiment, enabled=True,
-                 feature_flag=None):
+    def __init__(self, id, name, owner, experiment, enabled=True):
         self.id = id,
         self.name = name
         self.owner = owner
         self._experiment = experiment
         self._enabled = enabled
-        self._feature_flag = feature_flag
-
-    def enabled(self, **kwargs):
-        if not self._enabled:
-            return False
-
-        if self._feature_flag is None:
-            return True
-
-        if self._feature_flag.enabled(**kwargs):
-            return True
-
-        return False
 
     def variant(self, **kwargs):
-        return self._experiment.variant(**kwargs)
+        if self._enabled:
+            return self._experiment.variant(**kwargs)
+        else:
+            return None
 
     def should_log_bucketing(self):
         return self._experiment.should_log_bucketing()
@@ -103,17 +91,12 @@ def parse_experiment(config):
             experiment=ForcedVariantExperiment(None),
         )
 
-    if "feature" in config:
-        feature_flag = feature_flag_from_config(config["feature"])
-    else:
-        feature_flag = None
     if experiment_type == "r2":
         return ExperimentManager(
             id=experiment_id,
             name=name,
             owner=owner,
             enabled=enabled,
-            feature_flag=feature_flag,
             experiment=R2Experiment.from_dict(name, experiment_config),
         )
     else:

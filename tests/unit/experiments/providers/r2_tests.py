@@ -442,6 +442,74 @@ class TestSimulatedR2Experiments(unittest.TestCase):
                 ), None
             )
 
+    def assert_same_variant(self, users, content, config, expected, **kwargs):
+        self.mock_filewatcher.get_data.return_value = {config["name"]: config}
+        for user in users:
+            experiments = self.factory.make_object_for_context(None, None)
+            self.assertEqual(
+                experiments.variant(
+                    config["name"],
+                    user_id=user.id,
+                    user_name=user.name,
+                    logged_in=user.logged_in,
+                    content_id=content.id,
+                    content_type=content.type,
+                    **kwargs
+                ), expected
+            )
+
+    def test_experiment_overrides(self):
+        config = {
+            "id": "1",
+            "name": "test",
+            "owner": "test",
+            "type": "r2",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "experiment": {
+                "targeting": {
+                    "logged_in": [True],
+                },
+                "overrides": {
+                    "url_features": {
+                        "larger": "larger",
+                        "smaller": "smaller",
+                    },
+                },
+                "variants": {
+                    "larger": 5,
+                    "smaller": 10,
+                    "control_1": 10,
+                    "control_2": 10,
+                },
+            },
+        }
+        self.assert_same_variant(
+            users=get_users(2000),
+            content=Content(None, None),
+            config=config,
+            expected="larger",
+            url_features=["larger"],
+        )
+        self.assert_same_variant(
+            users=get_users(2000),
+            content=Content(None, None),
+            config=config,
+            expected="larger",
+            url_features=["larger", "test"],
+        )
+        self.assert_same_variant(
+            users=get_users(2000),
+            content=Content(None, None),
+            config=config,
+            expected="smaller",
+            url_features=["smaller"],
+        )
+        self.do_user_experiment_simulation(
+            users=get_users(2000),
+            content=Content(None, None),
+            config=config,
+        )
+
     def test_loggedin_experiment(self):
         config = {
             "id": "1",
@@ -449,16 +517,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "owner": "test",
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_in": 100,
-                },
-            },
             "experiment": {
+                "targeting": {
+                    "logged_in": [True],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -486,16 +548,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": True,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_in": 100,
-                },
-            },
             "experiment": {
+                "targeting": {
+                    "logged_in": [True],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -523,16 +579,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_in": 100,
-                },
-            },
             "experiment": {
+                "targeting": {
+                    "logged_in": [True],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -559,16 +609,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "owner": "test",
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_out": 100,
-                },
-            },
             "experiment": {
+                "targeting": {
+                    "logged_in": [False],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -595,16 +639,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "owner": "test",
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_out": 100,
-                },
-            },
             "experiment": {
+                "targeting": {
+                    "logged_in": [False],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -634,17 +672,11 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "owner": "test",
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_out": 100,
-                },
-            },
+            "enabled": True,
             "experiment": {
-                "enabled": True,
+                "targeting": {
+                    "logged_in": [False],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -672,16 +704,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_out": 100,
-                },
-            },
             "experiment": {
+                "targeting": {
+                    "logged_in": [False],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -708,17 +734,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "owner": "test",
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_out": 100,
-                    "percent_logged_in": 100,
-                },
-            },
             "experiment": {
+                "targeting": {
+                    "logged_in": [True, False],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -741,17 +760,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "enabled": False,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {
-                    "percent_logged_out": 100,
-                    "percent_logged_in": 100,
-                },
-            },
             "experiment": {
+                "targeting": {
+                    "logged_in": [True, False],
+                },
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -773,14 +785,8 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "owner": "test",
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
-            "feature": {
-                "id": "1",
-                "name": "test",
-                "type": "basic",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
-                "feature": {},
-            },
             "experiment": {
+                "targeting": {},
                 "variants": {
                     "larger": 5,
                     "smaller": 10,
@@ -803,9 +809,9 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
-                "page": True,
-                "content_flags": {
-                    "subreddit_only": True,
+                "bucket_val": "content_id",
+                "targeting": {
+                    "content_type": ["subreddit"],
                 },
                 "variants": {
                     "larger": 5,
@@ -844,9 +850,9 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             "type": "r2",
             "expires": int(time.time()) + THIRTY_DAYS_SEC,
             "experiment": {
-                "page": True,
-                "content_flags": {
-                    "link_only": True,
+                "bucket_val": "content_id",
+                "targeting": {
+                    "content_type": ["link", "comment"],
                 },
                 "variants": {
                     "larger": 5,

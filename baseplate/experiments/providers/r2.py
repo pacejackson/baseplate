@@ -18,21 +18,21 @@ class R2Experiment(ExperimentInterface):
     event pipeline.
     """
 
-    EXPERIMENT_TYPES = {"page", "user"}
-
-    def __init__(self, name, type, variants, seed=None, url_variants=None,
-                 content_flags=None):
-        url_variants = url_variants or {}
-        content_flags = content_flags or {}
-        assert type in self.EXPERIMENT_TYPES
-        assert set(url_variants.values()) - set(variants.keys()) == set()
+    def __init__(self, name, variants, seed=None, bucket_val="user_id",
+                 targeting=None, overrides=None):
+        targeting = targeting or {}
+        overrides = overrides or {}
+        for _, v in iteritems(targeting):
+            assert isinstance(v, list)
+        for _, v in iteritems(overrides):
+            assert isinstance(v, dict)
         self.name = name
         self.seed = seed if seed else name
         self.num_buckets = 1000
-        self.type = type
-        self.content_flags = content_flags
         self.variants = variants
-        self.url_variants = url_variants
+        self.targeting = targeting
+        self.overrides = overrides
+        self.bucket_val = bucket_val
 
     @classmethod
     def from_dict(cls, name, config):
@@ -57,55 +57,60 @@ class R2Experiment(ExperimentInterface):
         :param dict config: The "experiment" config dict from the base config.
         :rtype: baseplate.experiments.providers.r2.R2Experiment
         """
-        if config.get('page'):
-            experiment_type = "page"
-        else:
-            experiment_type = "user"
-        variants = config.get("variants", {})
-        url_variants = {}
-        for url_flag, variant in iteritems(config.get("url", {})):
-            if variant not in variants:
-                logger.warning(
-                    "Undefined url variant <%s:%s> in experiment <%s>",
-                    url_flag,
-                    variant,
-                    name,
-                )
-            else:
-                url_variants[url_flag] = variant
         return cls(
             name=name,
-            type=experiment_type,
+            variants=config.get("variants", {}),
+            targeting=config.get("targeting"),
+            overrides=config.get("overrides"),
             seed=config.get("seed"),
-            variants=variants,
-            url_variants=url_variants,
-            content_flags=config.get("content_flags", {}),
+            bucket_val=config.get("bucket_val", "user_id"),
         )
 
     def should_log_bucketing(self):
         return True
 
-    def variant(self, **kwargs):
-        url_flags = kwargs.get("url_flags")
-        if url_flags and self.url_variants:
-            for flag in url_flags:
-                if flag in self.url_variants:
-                    return self.url_variants[flag]
+    def _check_overrides(self, **kwargs):
+        for override_arg in self.overrides:
+            if override_arg in kwargs:
+                values = kwargs[override_arg]
+                if not isinstance(values, (list, tuple)):
+                    values = [values]
+                for value in values:
+                    override = self.overrides[override_arg].get(value)
+                    if override is not None:
+                        return override
+        return None
 
-        if self.type == "user":
-            return self._get_user_experiment_variant(kwargs["user_id"])
-        elif self.type == "page":
-            return self._get_page_experiment_variant(
-                kwargs["content_id"],
-                kwargs["content_type"],
-            )
-        else:
-            logger.warning(
-                "Experiment <%s> with unkown type %s",
+    def _is_enabled(self, **kwargs):
+        for targeting_param, allowed_values in iteritems(self.targeting):
+            if targeting_param in kwargs:
+                targeting_values = kwargs[targeting_param]
+                if not isinstance(targeting_values, (list, tuple)):
+                    targeting_values = [targeting_values]
+                if not isinstance(allowed_values, list):
+                    allowed_values = [allowed_values]
+                for value in targeting_values:
+                    if value in allowed_values:
+                        return True
+        return False
+
+    def variant(self, **kwargs):
+        if self.bucket_val not in kwargs:
+            raise ValueError(
+                "Must specify %s in call to variant for experiment %s.",
+                self.bucket_val,
                 self.name,
-                self.type,
             )
+
+        variant = self._check_overrides(**kwargs)
+        if variant is not None and variant in self.variants:
+            return variant
+
+        if not self._is_enabled(**kwargs):
             return None
+
+        bucket = self._calculate_bucket(kwargs[self.bucket_val])
+        return self._choose_variant(bucket)
 
     def _calculate_bucket(self, bucket_val):
         """Sort something into one of self.num_buckets buckets.
@@ -200,33 +205,3 @@ class R2Experiment(ExperimentInterface):
             return candidate_variant
         else:
             return None
-
-    def _get_page_experiment_variant(self, content_id, content_type):
-        bucket = self._get_thing_bucket(content_id, content_type)
-        if bucket is None:
-            return None
-        return self._choose_variant(bucket)
-
-    def _get_user_experiment_variant(self, user_id):
-        if user_id is None:
-            return None
-
-        bucket = self._calculate_bucket(user_id)
-        return self._choose_variant(bucket)
-
-    def _get_thing_bucket(self, content_id, content_type):
-        if content_id is None:
-            return None
-
-        # If we've restricted the experiment to certain page types, make sure
-        # the request is for one of those
-        if (self.content_flags.get('subreddit_only', False) and
-                content_type != 'subreddit'):
-            return None
-
-        if (self.content_flags.get('link_only', False) and
-                (content_type != 'link' and content_type != 'comment')):
-            # We treat comment permalink pages like general comments pages
-            return None
-
-        return self._calculate_bucket(content_id)
