@@ -747,3 +747,51 @@ class TestFeatureFlag(unittest.TestCase):
             user_id=self.user.id,
             logged_in=self.user.logged_in,
         ), "active")
+
+    def test_is_newer_than(self):
+        cfg = {
+            "id": "1",
+            "name": "test_feature",
+            "type": "feature_flag",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "experiment": {
+                "newer_than": int(time.time()) - THIRTY_DAYS_SEC,
+                "variants": {
+                    "active": 100,
+                },
+            },
+        }
+        feature_flag = parse_experiment(cfg)
+        self.assertEqual(feature_flag.variant(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_created=int(time.time()),
+        ), "active")
+        self.assertNotEqual(feature_flag.variant(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ), "active")
+
+    def test_is_not_newer_than(self):
+        cfg = {
+            "id": "1",
+            "name": "test_feature",
+            "type": "feature_flag",
+            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "experiment": {
+                "newer_than": int(time.time()) + THIRTY_DAYS_SEC,
+                "variants": {
+                    "active": 100,
+                },
+            },
+        }
+        feature_flag = parse_experiment(cfg)
+        self.assertNotEqual(feature_flag.variant(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+            user_created=int(time.time()),
+        ), "active")
+        self.assertNotEqual(feature_flag.variant(
+            user_id=self.user.id,
+            logged_in=self.user.logged_in,
+        ), "active")
