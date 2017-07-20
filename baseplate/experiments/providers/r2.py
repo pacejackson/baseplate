@@ -19,7 +19,7 @@ class R2Experiment(ExperimentInterface):
     """
 
     def __init__(self, name, variants, seed=None, bucket_val="user_id",
-                 targeting=None, overrides=None):
+                 targeting=None, overrides=None, newer_than=None):
         targeting = targeting or {}
         overrides = overrides or {}
         for _, v in iteritems(targeting):
@@ -33,6 +33,8 @@ class R2Experiment(ExperimentInterface):
         self.targeting = targeting
         self.overrides = overrides
         self.bucket_val = bucket_val
+        self.newer_than = None
+
 
     @classmethod
     def from_dict(cls, name, config):
@@ -64,6 +66,7 @@ class R2Experiment(ExperimentInterface):
             overrides=config.get("overrides"),
             seed=config.get("seed"),
             bucket_val=config.get("bucket_val", "user_id"),
+            newer_than=config.get("newer_than"),
         )
 
     def should_log_bucketing(self):
@@ -92,6 +95,11 @@ class R2Experiment(ExperimentInterface):
                 for value in targeting_values:
                     if value in allowed_values:
                         return True
+
+        user_created = kwargs.get("user_created")
+        if self.newer_than and user_created and user_created > self.newer_than:
+            return True
+
         return False
 
     def variant(self, **kwargs):
