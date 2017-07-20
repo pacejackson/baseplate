@@ -72,7 +72,7 @@ class Experiments(object):
     def variant(self, name, bucket_event_override=None,
                 extra_event_params=None, **kwargs):
         cache_key = "%s:%s" % (name, str(sorted(iteritems(kwargs))))
-        if cache_key not in self._cache:
+        if cache_key not in self._cache or bucket_event_override:
             self._cache[cache_key] = self._bucket(
                 name=name,
                 bucket_event_override=bucket_event_override,
