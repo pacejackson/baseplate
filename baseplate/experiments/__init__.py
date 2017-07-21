@@ -59,22 +59,24 @@ class Experiments(object):
         experiment = parse_experiment(config)
         variant = experiment.variant(**kwargs)
 
-        should_log_bucketing_event = experiment.should_log_bucketing()
+        do_log = True
+
+        if variant is None:
+            do_log = False
 
         cache_key = experiment.event_cache_key(**kwargs)
 
-        if variant is None:
-            should_log_bucketing_event = False
-
         if cache_key and cache_key in self._already_bucketed:
-            should_log_bucketing_event = False
+            do_log = False
 
         if bucketing_event_override is True:
-            should_log_bucketing_event = True
+            do_log = True
         elif bucketing_event_override is False:
-            should_log_bucketing_event = False
+            do_log = False
 
-        if should_log_bucketing_event:
+        do_log = do_log and experiment.should_log_bucketing()
+
+        if do_log:
             self._log_bucketing_event(experiment, variant, extra_event_params)
             if cache_key:
                 self._already_bucketed.add(cache_key)
