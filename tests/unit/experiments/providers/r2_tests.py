@@ -10,7 +10,7 @@ import unittest
 
 from baseplate._compat import iteritems, long, range
 from baseplate.events import EventQueue
-from baseplate.experiments import ExperimentsContextFactory, User, Content
+from baseplate.experiments import ExperimentsContextFactory
 from baseplate.experiments.providers import parse_experiment
 from baseplate.experiments.providers.r2 import R2Experiment
 from baseplate.file_watcher import FileWatcher
@@ -28,10 +28,10 @@ def get_users(num_users, logged_in=True):
             name = str(i)
         else:
             name = None
-        users.append(User(
+        users.append(dict(
             name=name,
             id="t2_%s" % str(i),
-            created=int(time.time()),
+            logged_in=logged_in,
         ))
     return users
 
@@ -49,7 +49,7 @@ def generate_content(num_content, content_type):
         raise ValueError("Unknown content type: %s", content_type)
 
     for i in range(num_content):
-        content.append(Content(id_fmt % i, content_type))
+        content.append(dict(id=id_fmt % i, type=content_type))
 
     return content
 
@@ -357,11 +357,11 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             experiments = self.factory.make_object_for_context(None, None)
             variant = experiments.variant(
                 config["name"],
-                user_id=user.id,
-                user_name=user.name,
-                logged_in=user.logged_in,
-                content_id=content.id,
-                content_type=content.type,
+                user_id=user["id"],
+                user_name=user["name"],
+                logged_in=user["logged_in"],
+                content_id=content["id"],
+                content_type=content["type"],
                 **experiment_vars
             )
             if variant:
@@ -380,7 +380,8 @@ class TestSimulatedR2Experiments(unittest.TestCase):
                 measured_percent, percent, delta=error_bar_percent
             )
 
-    def do_user_experiment_simulation(self, users, content, config):
+    def do_user_experiment_simulation(self, users, config, content=None):
+        content = content or dict(id=None, type=None)
         static_vars = {
             "content": content,
             "url_params": {},
@@ -408,18 +409,19 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             targets=pages,
         )
 
-    def assert_no_user_experiment(self, users, content, config):
+    def assert_no_user_experiment(self, users, config, content=None):
+        content = content or dict(id=None, type=None)
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for user in users:
             experiments = self.factory.make_object_for_context(None, None)
             self.assertIs(
                 experiments.variant(
                     config["name"],
-                    user_id=user.id,
-                    user_name=user.name,
-                    logged_in=user.logged_in,
-                    content_id=content.id,
-                    content_type=content.type,
+                    user_id=user["id"],
+                    user_name=user["name"],
+                    logged_in=user["logged_in"],
+                    content_id=content["id"],
+                    content_type=content["type"],
                 ), None
             )
 
@@ -430,26 +432,28 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             self.assertIs(
                 experiments.variant(
                     config["name"],
-                    user_id=user.id,
-                    user_name=user.name,
-                    logged_in=user.logged_in,
-                    content_id=page.id,
-                    content_type=page.type,
+                    user_id=user["id"],
+                    user_name=user["name"],
+                    logged_in=user["logged_in"],
+                    content_id=page["id"],
+                    content_type=page["type"],
                 ), None
             )
 
-    def assert_same_variant(self, users, content, config, expected, **kwargs):
+    def assert_same_variant(self, users, config, expected, content=None,
+                            **kwargs):
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
+        content = content or dict(id=None, type=None)
         for user in users:
             experiments = self.factory.make_object_for_context(None, None)
             self.assertEqual(
                 experiments.variant(
                     config["name"],
-                    user_id=user.id,
-                    user_name=user.name,
-                    logged_in=user.logged_in,
-                    content_id=content.id,
-                    content_type=content.type,
+                    user_id=user["id"],
+                    user_name=user["name"],
+                    logged_in=user["logged_in"],
+                    content_id=content["id"],
+                    content_type=content["type"],
                     **kwargs
                 ), expected
             )
@@ -481,28 +485,24 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.assert_same_variant(
             users=get_users(2000),
-            content=Content(None, None),
             config=config,
             expected="larger",
             url_features=["test_larger"],
         )
         self.assert_same_variant(
             users=get_users(2000),
-            content=Content(None, None),
             config=config,
             expected="larger",
             url_features=["test_larger", "test"],
         )
         self.assert_same_variant(
             users=get_users(2000),
-            content=Content(None, None),
             config=config,
             expected="smaller",
             url_features=["larger", "test_smaller"],
         )
         self.do_user_experiment_simulation(
             users=get_users(2000),
-            content=Content(None, None),
             config=config,
         )
 
@@ -527,12 +527,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.do_user_experiment_simulation(
             users=get_users(2000),
-            content=Content(None, None),
             config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
 
@@ -558,12 +556,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.do_user_experiment_simulation(
             users=get_users(2000),
-            content=Content(None, None),
             config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
 
@@ -589,12 +585,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.assert_no_user_experiment(
             users=get_users(2000),
-            content=Content(None, None),
             config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
 
@@ -619,12 +613,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.do_user_experiment_simulation(
             users=get_users(2000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=True),
-            content=Content(None, None),
             config=config,
         )
 
@@ -649,15 +641,13 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         users = get_users(2000, logged_in=False)
         for user in users:
-            user.id = None
+            user["id"] = None
         self.assert_no_user_experiment(
             users=users,
-            content=Content(None, None),
             config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=True),
-            content=Content(None, None),
             config=config,
         )
 
@@ -683,12 +673,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.do_user_experiment_simulation(
             users=get_users(2000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=True),
-            content=Content(None, None),
             config=config,
         )
 
@@ -714,12 +702,10 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
         self.assert_no_user_experiment(
             users=get_users(2000, logged_in=True),
-            content=Content(None, None),
             config=config,
         )
 
@@ -744,7 +730,6 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.do_user_experiment_simulation(
             users=get_users(1000) + get_users(1000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
 
@@ -770,7 +755,6 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
 
@@ -793,7 +777,6 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         }
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
 
@@ -834,7 +817,6 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         )
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )
 
@@ -875,6 +857,5 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         )
         self.assert_no_user_experiment(
             users=get_users(1000) + get_users(1000, logged_in=False),
-            content=Content(None, None),
             config=config,
         )

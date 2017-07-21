@@ -6,8 +6,6 @@ from __future__ import unicode_literals
 import json
 import logging
 
-from collections import namedtuple
-
 from .providers import parse_experiment
 from .._compat import iteritems
 from ..context import ContextFactory
@@ -16,22 +14,6 @@ from ..file_watcher import FileWatcher, WatchedFileNotAvailableError
 
 
 logger = logging.getLogger(__name__)
-
-
-class User(object):
-
-    def __init__(self, id, name, created, flags=None):
-        self.id = id
-        self.name = name
-        self.created = created
-        self.flags = flags or set()
-
-    @property
-    def logged_in(self):
-        return self.name is not None
-
-
-Content = namedtuple("Content", ["id", "type"])
 
 
 class ExperimentsContextFactory(ContextFactory):

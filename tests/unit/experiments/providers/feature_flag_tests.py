@@ -8,9 +8,9 @@ import collections
 import time
 import unittest
 
-from baseplate._compat import long, range
+from baseplate._compat import range
 from baseplate.events import EventQueue
-from baseplate.experiments import User, Experiments
+from baseplate.experiments import Experiments
 from baseplate.experiments.providers import parse_experiment
 from baseplate.file_watcher import FileWatcher
 
@@ -26,7 +26,9 @@ class TestFeatureFlag(unittest.TestCase):
 
     def setUp(self):
         super(TestFeatureFlag, self).setUp()
-        self.user = User(name="gary", id="t2_beef", created=int(time.time()))
+        self.user_id = "t2_beef"
+        self.user_name = "gary"
+        self.user_logged_in = True
 
     def _assert_fuzzy_percent_true(self, results, percent):
         stats = collections.Counter(results)
@@ -58,12 +60,12 @@ class TestFeatureFlag(unittest.TestCase):
         self.assertEqual(event_queue.put.call_count, 0)
         variant = experiments.variant(
             "test",
-            user_id=self.user.id,
+            user_id=self.user_id,
             logged_in=True,
         )
         self.assertEqual(variant, "active")
         self.assertEqual(event_queue.put.call_count, 0)
-        experiments.variant("test", user_id=self.user.id, logged_in=True)
+        experiments.variant("test", user_id=self.user_id, logged_in=True)
         self.assertEqual(event_queue.put.call_count, 0)
 
     def test_admin_enabled(self):
@@ -85,12 +87,12 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["admin"],
         ), "active")
 
@@ -113,17 +115,17 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=[],
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["beta"],
         ), "active")
 
@@ -146,12 +148,12 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["employee"],
         ), "active")
 
@@ -174,17 +176,17 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=[],
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["beta"],
         ), "active")
 
@@ -207,12 +209,12 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["beta"],
         ), "active")
 
@@ -235,17 +237,17 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=[],
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["admin"],
         ), "active")
 
@@ -268,12 +270,12 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["gold"],
         ), "active")
 
@@ -296,29 +298,22 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=[],
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["admin"],
         ), "active")
 
     def test_percent_loggedin(self):
         num_users = 2000
-        users = []
-        for i in range(num_users):
-            users.append(User(
-                name=str(i),
-                id="t2_%s" % str(i),
-                created=int(time.time()),
-            ))
 
         def simulate_percent_loggedin(wanted_percent):
             cfg = {
@@ -337,8 +332,10 @@ class TestFeatureFlag(unittest.TestCase):
             }
             feature_flag = parse_experiment(cfg)
             return (
-                feature_flag.variant(user_id=x.id, logged_in=x.logged_in) == "active"
-                for x in users
+                feature_flag.variant(
+                    user_id="t2_%s" % str(i),
+                    logged_in=True,
+                ) == "active" for i in range(num_users)
             )
 
         self.assertFalse(any(simulate_percent_loggedin(0)))
@@ -350,13 +347,6 @@ class TestFeatureFlag(unittest.TestCase):
 
     def test_percent_loggedout(self):
         num_users = 2000
-        users = []
-        for i in range(num_users):
-            users.append(User(
-                name=None,
-                id="t2_%s" % str(i),
-                created=int(time.time()),
-            ))
 
         def simulate_percent_loggedout(wanted_percent):
             cfg = {
@@ -375,8 +365,10 @@ class TestFeatureFlag(unittest.TestCase):
             }
             feature_flag = parse_experiment(cfg)
             return (
-                feature_flag.variant(user_id=x.id, logged_in=x.logged_in) == "active"
-                for x in users
+                feature_flag.variant(
+                    user_id="t2_%s" % str(i),
+                    logged_in=False,
+                ) == "active" for i in range(num_users)
             )
 
         self.assertFalse(any(simulate_percent_loggedout(0)))
@@ -405,13 +397,13 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             url_features=["test_state"],
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             url_features=["x", "test_state"],
         ), "active")
 
@@ -434,12 +426,12 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             url_features=["x"],
         ), "active")
 
@@ -464,29 +456,26 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_name="Gary",
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
-            user_name=self.user.name,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
+            user_name=self.user_name,
         ), "active")
-        all_uppercase = User(
-            name="ALL_UPPERCASE",
-            id="t2_f00d",
-            created=int(time.time())
-        )
+        all_uppercase_id = "t2_f00d"
+        all_uppercase_name = "ALL_UPPERCASE"
         self.assertEqual(feature_flag.variant(
-            user_id=all_uppercase.id,
-            logged_in=all_uppercase.logged_in,
-            user_name=all_uppercase.name,
+            user_id=all_uppercase_id,
+            logged_in=True,
+            user_name=all_uppercase_name,
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=all_uppercase.id,
-            logged_in=all_uppercase.logged_in,
-            user_name=all_uppercase.name.lower(),
+            user_id=all_uppercase_id,
+            logged_in=True,
+            user_name=all_uppercase_name.lower(),
         ), "active")
 
     def test_user_not_in(self):
@@ -506,9 +495,9 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
-            user_name=self.user.name,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
+            user_name=self.user_name,
         ), "active")
         cfg = {
             "id": 1,
@@ -529,9 +518,9 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
-            user_name=self.user.name,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
+            user_name=self.user_name,
         ), "active")
 
     def test_subreddit_in(self):
@@ -554,13 +543,13 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subreddit="WTF",
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subreddit="wtf",
         ), "active")
 
@@ -581,8 +570,8 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subreddit="wtf",
         ), "active")
         cfg = {
@@ -604,8 +593,8 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subreddit="wtf",
         ), "active")
 
@@ -629,13 +618,13 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subdomain="beta",
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subdomain="BETA",
         ), "active")
 
@@ -656,13 +645,13 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subdomain="beta",
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subdomain="",
         ), "active")
         cfg = {
@@ -684,8 +673,8 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             subdomain="beta",
         ), "active")
 
@@ -710,8 +699,8 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["admin"],
         ), "active")
 
@@ -735,13 +724,13 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["admin"],
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
 
         # no URL but admin should still be True
@@ -766,18 +755,18 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_groups=["admin"],
         ), "active")
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             url_features=["test_featurestate"],
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
 
     def test_is_newer_than(self):
@@ -795,13 +784,13 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_created=int(time.time()),
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")
 
     def test_is_not_newer_than(self):
@@ -819,11 +808,11 @@ class TestFeatureFlag(unittest.TestCase):
         }
         feature_flag = parse_experiment(cfg)
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
             user_created=int(time.time()),
         ), "active")
         self.assertNotEqual(feature_flag.variant(
-            user_id=self.user.id,
-            logged_in=self.user.logged_in,
+            user_id=self.user_id,
+            logged_in=self.user_logged_in,
         ), "active")

@@ -7,7 +7,7 @@ import time
 import unittest
 
 from baseplate.events import EventQueue
-from baseplate.experiments import Experiments,Content, User
+from baseplate.experiments import Experiments
 from baseplate.file_watcher import FileWatcher, WatchedFileNotAvailableError
 
 from ... import mock
@@ -21,7 +21,8 @@ class TestExperiments(unittest.TestCase):
         super(TestExperiments, self).setUp()
         self.event_queue = mock.Mock(spec=EventQueue)
         self.mock_filewatcher = mock.Mock(spec=FileWatcher)
-        self.user = User(name="gary", id="t2_1", created=int(time.time()))
+        self.user_id = "t2_1"
+        self.user_name = "gary"
 
     def test_that_we_only_send_bucketing_event_once(self):
         self.mock_filewatcher.get_data.return_value = {
@@ -49,9 +50,9 @@ class TestExperiments(unittest.TestCase):
             return_value="active",
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", user_id=self.user.id)
+            experiments.variant("test", user_id=self.user_id)
             self.assertEqual(self.event_queue.put.call_count, 1)
-            experiments.variant("test", user_id=self.user.id)
+            experiments.variant("test", user_id=self.user_id)
             self.assertEqual(self.event_queue.put.call_count, 1)
 
     def test_that_bucketing_events_are_always_sent_with_override_true(self):
@@ -78,14 +79,14 @@ class TestExperiments(unittest.TestCase):
         ) as p:
             p.return_value="active"
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", user_id=self.user.id,
+            experiments.variant("test", user_id=self.user_id,
                                 bucketing_event_override=True)
             self.assertEqual(self.event_queue.put.call_count, 1)
-            experiments.variant("test", user_id=self.user.id,
+            experiments.variant("test", user_id=self.user_id,
                                 bucketing_event_override=True)
             self.assertEqual(self.event_queue.put.call_count, 2)
             p.return_value = None
-            experiments.variant("test", user_id=self.user.id,
+            experiments.variant("test", user_id=self.user_id,
                                 bucketing_event_override=True)
             self.assertEqual(self.event_queue.put.call_count, 3)
 
@@ -113,14 +114,14 @@ class TestExperiments(unittest.TestCase):
         ) as p:
             p.return_value="active"
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", user_id=self.user.id,
+            experiments.variant("test", user_id=self.user_id,
                                 bucketing_event_override=False)
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", user_id=self.user.id,
+            experiments.variant("test", user_id=self.user_id,
                                 bucketing_event_override=False)
             self.assertEqual(self.event_queue.put.call_count, 0)
             p.return_value = None
-            experiments.variant("test", user_id=self.user.id,
+            experiments.variant("test", user_id=self.user_id,
                                 bucketing_event_override=False)
             self.assertEqual(self.event_queue.put.call_count, 0)
 
@@ -148,9 +149,9 @@ class TestExperiments(unittest.TestCase):
             return_value=None,
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", user_id=self.user.id)
+            experiments.variant("test", user_id=self.user_id)
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", user_id=self.user.id)
+            experiments.variant("test", user_id=self.user_id)
             self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_experiment_disables(self):
@@ -180,27 +181,27 @@ class TestExperiments(unittest.TestCase):
             return_value=False,
         ):
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", user_id=self.user.id)
+            experiments.variant("test", user_id=self.user_id)
             self.assertEqual(self.event_queue.put.call_count, 0)
-            experiments.variant("test", user_id=self.user.id)
+            experiments.variant("test", user_id=self.user_id)
             self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_cant_load_config(self):
         self.mock_filewatcher.get_data.side_effect = WatchedFileNotAvailableError("path", None)  # noqa
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", user_id=self.user.id)
+        experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", user_id=self.user.id)
+        experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_cant_parse_config(self):
         self.mock_filewatcher.get_data.side_effect = TypeError()
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", user_id=self.user.id)
+        experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", user_id=self.user.id)
+        experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_cant_find_experiment(self):
@@ -222,7 +223,7 @@ class TestExperiments(unittest.TestCase):
         }
         experiments = Experiments(self.mock_filewatcher, self.event_queue)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", user_id=self.user.id)
+        experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
-        experiments.variant("test", user_id=self.user.id)
+        experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
