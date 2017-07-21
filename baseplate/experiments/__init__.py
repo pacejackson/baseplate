@@ -145,7 +145,7 @@ class Experiments(object):
             logger.exception("The event queue is full.")
 
 
-def experiments_client_store_from_config(app_config, event_queue=None):
+def experiments_client_from_config(app_config, event_queue=None):
     """Configure and return an :py:class:`ExperimentsContextFactory` object.
 
     This expects one configuration option:
@@ -168,4 +168,4 @@ def experiments_client_store_from_config(app_config, event_queue=None):
         },
     })
     # pylint: disable=maybe-no-member
-    return ExperimentsContextFactory(cfg.secrets.path, event_queue)
+    return ExperimentsContextFactory(cfg.experiments.path, event_queue)

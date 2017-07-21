@@ -7,7 +7,11 @@ import time
 import unittest
 
 from baseplate.events import EventQueue
-from baseplate.experiments import Experiments
+from baseplate.experiments import (
+    Experiments,
+    ExperimentsContextFactory,
+    experiments_client_from_config,
+)
 from baseplate.file_watcher import FileWatcher, WatchedFileNotAvailableError
 
 from ... import mock
@@ -230,3 +234,11 @@ class TestExperiments(unittest.TestCase):
         self.assertEqual(self.event_queue.put.call_count, 0)
         experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
+
+
+class ExperimentsClientFromConfigTests(unittest.TestCase):
+    def test_make_clients(self):
+        experiments = experiments_client_from_config({
+            "experiments.path": "/tmp/test",
+        })
+        self.assertIsInstance(experiments, ExperimentsContextFactory)
