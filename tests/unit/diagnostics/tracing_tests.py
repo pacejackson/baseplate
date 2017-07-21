@@ -33,7 +33,7 @@ class TraceTestBase(unittest.TestCase):
 
 class TraceObserverTests(TraceTestBase):
     def setUp(self):
-        super(TraceObserverTests, self).setUp
+        super(TraceObserverTests, self).setUp()
         self.mock_context = mock.Mock()
 
     def test_null_recorder_setup(self):
