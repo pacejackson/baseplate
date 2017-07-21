@@ -17,8 +17,19 @@ logger = logging.getLogger(__name__)
 
 
 class ExperimentsContextFactory(ContextFactory):
+    """ Experiment manager context factory
 
+    This factory will attach a new :py:class:`baseplate.experiments.Experiments`
+    to an attribute on the :term:`context object`.
+    """
     def __init__(self, path, event_queue):
+        """ ExperimentContextFactory constructor
+
+        :param str path: Path to the experiment config file.
+        :param baseplate.events.EventQueue event_queue: Event queue used for
+            logging bucketing events to the event pipeline.  You can set this
+            to None to disabled bucketing events entirely.
+        """
         self._filewatcher = FileWatcher(path, json.load)
         self._event_queue = event_queue
 
@@ -27,6 +38,9 @@ class ExperimentsContextFactory(ContextFactory):
 
 
 class Experiments(object):
+    """ Access to experiments with automatic refresh when changed. Handles
+    logging bucketing events to the event pipeline.
+    """
 
     def __init__(self, config_watcher, event_queue=None):
         self._config_watcher = config_watcher
@@ -52,6 +66,30 @@ class Experiments(object):
 
     def variant(self, name, bucketing_event_override=None,
                 extra_event_params=None, **kwargs):
+        """ Which variant, if any, is active for the experiment specified by
+        "name".  If a variant is active, a bucketing event will be logged to
+        the event pipeline unless any one of the following conditions are met:
+
+        1. bucketing_event_override is set to False.
+        2. The experiment specified by "name" explicitly disables bucketing
+           events.
+        3. We have already logged a bucketing event for the value specified by
+           experiment.event_cache_key(**kwargs) within the current session.
+
+        :param str name: Name of the experiment you want to run.
+        :param bool bucketing_event_override: Optional value, defaults to None.
+            If set to True, will always log bucketing events unless the
+            experiment explicitly disables them.  If set to False, will never
+            send a bucketing event.  If set to None, no override will be
+            applied.
+        :param dict extra_event_params: Optional value.  Any extra values you
+            want to add to the bucketing event.
+        :param kwargs:  Arguments that will be passed to experiment.variant to
+            determine bucketing, targeting, and overrides.
+
+        :rtype str:
+        :return: Variant name if a variant is active, None otherwise.
+        """
         config = self._get_config(name)
         if not config:
             return None
@@ -84,7 +122,6 @@ class Experiments(object):
         return variant
 
     def _log_bucketing_event(self, experiment, variant, extra_event_params=None):
-
         if not self._event_queue:
             return
 
