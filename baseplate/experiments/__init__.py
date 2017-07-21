@@ -49,7 +49,7 @@ class Experiments(object):
     def __init__(self, config_watcher, event_queue=None, session=None):
         self._config_watcher = config_watcher
         self._event_queue = event_queue
-        self._cache = {}
+        self._already_bucketed = set()
         self._session = session
 
     def _get_config(self, name):
@@ -71,18 +71,6 @@ class Experiments(object):
 
     def variant(self, name, bucketing_event_override=None,
                 extra_event_params=None, **kwargs):
-        cache_key = "%s:%s" % (name, str(sorted(iteritems(kwargs))))
-        if cache_key not in self._cache or bucketing_event_override:
-            self._cache[cache_key] = self._bucket(
-                name=name,
-                bucketing_event_override=bucketing_event_override,
-                extra_event_params=extra_event_params,
-                **kwargs
-            )
-        return self._cache[cache_key]
-
-    def _bucket(self, name, bucketing_event_override=None,
-                extra_event_params=None, **kwargs):
         config = self._get_config(name)
         if not config:
             return None
@@ -92,7 +80,12 @@ class Experiments(object):
 
         should_log_bucketing_event = experiment.should_log_bucketing()
 
+        cache_key = experiment.event_cache_key(**kwargs)
+
         if variant is None:
+            should_log_bucketing_event = False
+
+        if cache_key and cache_key in self._already_bucketed:
             should_log_bucketing_event = False
 
         if bucketing_event_override is True:
@@ -102,6 +95,8 @@ class Experiments(object):
 
         if should_log_bucketing_event:
             self._log_bucketing_event(experiment, variant, extra_event_params)
+            if cache_key:
+                self._already_bucketed.add(cache_key)
 
         return variant
 

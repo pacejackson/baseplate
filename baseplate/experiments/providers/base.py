@@ -5,18 +5,16 @@ from __future__ import unicode_literals
 
 
 class Experiment(object):
-    """ Base interface for feature flag objects. """
+    """ Base interface for experiment objects. """
+
+    def event_cache_key(self, **kwargs):
+        return None
 
     def variant(self, **kwargs):
         """ Determine which variant, if any, of this experiment is active.
 
-        :param baseplate.features.User user: The user you want to run the
-            experiment on.
-        :param baseplate.features.Content content: The content for this
-            request. Can be either a subreddit, link, or comment.
-        :param list url_flags:  Flags specified in the "features" parameter of
-            the request url.  These can be used to force this function to
-            return a specific variant.
+
+
         :rtype string:
         :returns: The name of the enabled variant as a string if any variant is
         enabled.  If no variant is enabled, return None.

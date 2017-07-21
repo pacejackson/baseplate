@@ -52,19 +52,14 @@ class R2Experiment(Experiment):
         The config dict is expected to have the following format:
 
         {
-            "page": Optional boolean, if set to true, the experiment is
-                considered a "page" experiment and will run on the `content`
-                rather than the `user`.  If set to False or not set, the
-                experiment is considered a "user" experiment.
             "variants": Dict mapping variant names to their sizes.
-            "url": Dict mapping url "feature" parameters to the variant used
-                for that value.
             "seed": Optional value, overrides the seed for this experiment.  If
                 this is not set, `name` is used as the seed.
-            "content_flags":
         }
 
+        :param int id: The id of the experiment from the base config.
         :param str name: The name of the experiment from the base config.
+        :param str owner: The owner of the experiment from the base config.
         :param dict config: The "experiment" config dict from the base config.
         :rtype: baseplate.experiments.providers.r2.R2Experiment
         """
@@ -79,6 +74,14 @@ class R2Experiment(Experiment):
             bucket_val=config.get("bucket_val", "user_id"),
             newer_than=config.get("newer_than"),
         )
+
+    def event_cache_key(self, **kwargs):
+        if kwargs.get(self.bucket_val):
+            return ":".join(
+                [self.name, self.bucket_val, str(kwargs[self.bucket_val])]
+            )
+        else:
+            return None
 
     def should_log_bucketing(self):
         return True
