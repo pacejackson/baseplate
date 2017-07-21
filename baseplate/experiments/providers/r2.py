@@ -16,6 +16,11 @@ logger = logging.getLogger(__name__)
 class R2Experiment(Experiment):
     """ A "legacy", r2-style experiment. Should log bucketing events to the
     event pipeline.
+
+    Note that this style of experiment caps the size of your variants such
+    that:
+
+    effective_variant_size = max(variant_size, (1/num_variants) * 100)
     """
 
     def __init__(self, id, name, owner, variants, seed=None,
@@ -52,9 +57,28 @@ class R2Experiment(Experiment):
         The config dict is expected to have the following format:
 
         {
-            "variants": Dict mapping variant names to their sizes.
+            "variants": Dict mapping variant names to their sizes. Variant
+                sizes are expressed as numeric percentages rather than a
+                fraction of 1 (that is, 1.5 means 1.5%, not 150%).
+            "targeting": Optional dict.  Maps the names of targeting parameters
+                to lists of valid values.  When determining the variant of an
+                experiment, the targeting parameters you want to use are passed
+                in as kwargs to the call to experiment.variant.
+            "overrides": Optional dict.  Maps override parameters to dicts that
+                map values to the value you want to override the variant to.
+                When determining the variant of an experiment, the override
+                parameters you want to use are passed in as kwargs to the call
+                to experiment.variant.
+            "bucket_val": Optional value, defaults to "user_id".  Name of the
+                parameter you want to use for bucketing.  This value must be
+                passed to the call to experiment.variant as a kwarg.
             "seed": Optional value, overrides the seed for this experiment.  If
                 this is not set, `name` is used as the seed.
+            "newer_than": Optional value.  If set, you must pass a datetime
+                to the call to experiment.variant as the "created" parameter.
+                This value should be the time when the resource that you are
+                bucketing was created, such as when a User account was created
+                or when an LoID cookie was generated.
         }
 
         :param int id: The id of the experiment from the base config.
@@ -67,7 +91,7 @@ class R2Experiment(Experiment):
             id=id,
             name=name,
             owner=owner,
-            variants=config.get("variants", {}),
+            variants=config["variants"],
             targeting=config.get("targeting"),
             overrides=config.get("overrides"),
             seed=config.get("seed"),
@@ -85,36 +109,6 @@ class R2Experiment(Experiment):
 
     def should_log_bucketing(self):
         return True
-
-    def _check_overrides(self, **kwargs):
-        for override_arg in self.overrides:
-            if override_arg in kwargs:
-                values = kwargs[override_arg]
-                if not isinstance(values, (list, tuple)):
-                    values = [values]
-                for value in values:
-                    override = self.overrides[override_arg].get(value.lower())
-                    if override is not None:
-                        return override
-        return None
-
-    def _is_enabled(self, **kwargs):
-        for targeting_param, allowed_values in iteritems(self.targeting):
-            if targeting_param in kwargs:
-                targeting_values = kwargs[targeting_param]
-                if not isinstance(targeting_values, (list, tuple)):
-                    targeting_values = [targeting_values]
-                if not isinstance(allowed_values, list):
-                    allowed_values = [allowed_values]
-                for value in targeting_values:
-                    if value in allowed_values:
-                        return True
-
-        user_created = kwargs.get("user_created")
-        if self.newer_than and user_created and user_created > self.newer_than:
-            return True
-
-        return False
 
     def variant(self, **kwargs):
         lower_kwargs = {k.lower(): v for k, v in iteritems(kwargs)}
@@ -134,6 +128,40 @@ class R2Experiment(Experiment):
 
         bucket = self._calculate_bucket(lower_kwargs[self.bucket_val])
         return self._choose_variant(bucket)
+
+    def _check_overrides(self, **kwargs):
+        """ Check if any of the kwargs override the variant. """
+        for override_arg in self.overrides:
+            if override_arg in kwargs:
+                values = kwargs[override_arg]
+                if not isinstance(values, (list, tuple)):
+                    values = [values]
+                for value in values:
+                    override = self.overrides[override_arg].get(value.lower())
+                    if override is not None:
+                        return override
+        return None
+
+    def _is_enabled(self, **kwargs):
+        """ Check if the targeting parameters in kwargs allow us to perform
+        the experiment.
+        """
+        for targeting_param, allowed_values in iteritems(self.targeting):
+            if targeting_param in kwargs:
+                targeting_values = kwargs[targeting_param]
+                if not isinstance(targeting_values, (list, tuple)):
+                    targeting_values = [targeting_values]
+                if not isinstance(allowed_values, list):
+                    allowed_values = [allowed_values]
+                for value in targeting_values:
+                    if value in allowed_values:
+                        return True
+
+        user_created = kwargs.get("user_created")
+        if self.newer_than and user_created and user_created > self.newer_than:
+            return True
+
+        return False
 
     def _calculate_bucket(self, bucket_val):
         """Sort something into one of self.num_buckets buckets.
