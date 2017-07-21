@@ -28,11 +28,10 @@ class ExperimentsContextFactory(ContextFactory):
 
 class Experiments(object):
 
-    def __init__(self, config_watcher, event_queue=None, session=None):
+    def __init__(self, config_watcher, event_queue=None):
         self._config_watcher = config_watcher
         self._event_queue = event_queue
         self._already_bucketed = set()
-        self._session = session
 
     def _get_config(self, name):
         try:
@@ -93,10 +92,6 @@ class Experiments(object):
         event = Event("bucketing_events", event_type)
         for field, value in iteritems(extra_event_params):
             event.set_field(field, value)
-
-        if self._session:
-            for field, value in iteritems(self._session.event_params()):
-                event.set_field(field, value)
 
         event.set_field("variant", variant)
         event.set_field("experiment_id", experiment.id)
