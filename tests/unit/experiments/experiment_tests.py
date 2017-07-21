@@ -185,6 +185,9 @@ class TestExperiments(unittest.TestCase):
             self.assertEqual(self.event_queue.put.call_count, 0)
             experiments.variant("test", user_id=self.user_id)
             self.assertEqual(self.event_queue.put.call_count, 0)
+            experiments.variant("test", user_id=self.user_id,
+                                bucketing_event_override=True)
+            self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_cant_load_config(self):
         self.mock_filewatcher.get_data.side_effect = WatchedFileNotAvailableError("path", None)  # noqa
