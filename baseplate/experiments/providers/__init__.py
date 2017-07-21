@@ -21,34 +21,19 @@ def parse_experiment(config):
     owner = config.get("owner")
     experiment_config = config["experiment"]
     expiration = config["expires"]
+
     if int(time.time()) > expiration:
-        logger.warning(
-            "Found an expired experiment <%s:%s> that is owned by <%s>. "
-            "Please clean up.",
-            experiment_id,
-            name,
-            owner,
-        )
         return ForcedVariantExperiment(None)
+
     enabled = config.get("enabled", True)
     if not enabled:
-        logger.warning(
-            "Found a disabled experiment <%s:%s> that is owned by <%s>. "
-            "Please clean up.",
-            experiment_id,
-            name,
-            owner,
-        )
         return ForcedVariantExperiment(None)
+
     if "global_override" in config:
+        # We want to check if "global_override" is in config rather than
+        # checking config.get("global_override") because global_override = None
+        # is a valid setting.
         override = config.get("global_override")
-        logger.warning(
-            "Found an experiment with a global override <%s:%s> that is owned "
-            "by <%s>. Please clean up.",
-            experiment_id,
-            name,
-            owner,
-        )
         return ForcedVariantExperiment(override)
 
     if experiment_type == "r2":
