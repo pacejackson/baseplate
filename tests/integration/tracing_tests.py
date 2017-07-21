@@ -36,6 +36,7 @@ def example_application(request):
     return {"test": "success"}
 
 
+@mock.patch("threading.Thread", autospec=True)
 class TracingTests(unittest.TestCase):
 
     def _register_mock(self, context, server_span):
@@ -66,7 +67,7 @@ class TracingTests(unittest.TestCase):
         app = configurator.make_wsgi_app()
         self.test_app = webtest.TestApp(app)
 
-    def test_trace_on_inbound_request(self):
+    def test_trace_on_inbound_request(self, thread_mock):
         with mock.patch.object(TraceBaseplateObserver, 'on_server_span_created',
                                side_effect=self._register_mock) as mocked:
 
@@ -76,7 +77,7 @@ class TracingTests(unittest.TestCase):
             self.assertEqual(len(span['annotations']), 2)
             self.assertEqual(span['parentId'], 0)
 
-    def test_configure_tracing_with_defaults_legacy_style(self):
+    def test_configure_tracing_with_defaults_legacy_style(self, thread_mock):
         baseplate = Baseplate()
         self.assertEqual(0, len(baseplate.observers))
         baseplate.configure_tracing('test')
@@ -84,7 +85,7 @@ class TracingTests(unittest.TestCase):
         tracing_observer = baseplate.observers[0]
         self.assertEqual('test',tracing_observer.service_name)
 
-    def test_configure_tracing_with_defaults_new_style(self):
+    def test_configure_tracing_with_defaults_new_style(self, thread_mock):
         baseplate = Baseplate()
         self.assertEqual(0, len(baseplate.observers))
         client = make_client("test")
@@ -93,7 +94,7 @@ class TracingTests(unittest.TestCase):
         tracing_observer = baseplate.observers[0]
         self.assertEqual('test',tracing_observer.service_name)
 
-    def test_configure_tracing_with_args(self):
+    def test_configure_tracing_with_args(self, thread_mock):
         baseplate = Baseplate()
         self.assertEqual(0, len(baseplate.observers))
         baseplate.configure_tracing('test',
