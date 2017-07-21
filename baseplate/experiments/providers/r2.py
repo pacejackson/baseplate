@@ -85,7 +85,7 @@ class R2Experiment(Experiment):
         :param str name: The name of the experiment from the base config.
         :param str owner: The owner of the experiment from the base config.
         :param dict config: The "experiment" config dict from the base config.
-        :rtype: baseplate.experiments.providers.r2.R2Experiment
+        :rtype: :py:class:`baseplate.experiments.providers.r2.R2Experiment`
         """
         return cls(
             id=id,

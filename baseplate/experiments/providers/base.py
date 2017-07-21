@@ -14,6 +14,8 @@ class Experiment(object):
         log a bucketing event.  The kwargs should be the same values passed to
         the call to Experiment.variant.  If your experiment does log bucketing
         events, you must implement this function.
+
+        :rtype: :py:class:`str` or None
         """
         if self.should_log_bucketing():
             raise NotImplementedError
@@ -26,7 +28,7 @@ class Experiment(object):
         should be passed in as kwargs.  The parameter names are determined by
         the specific implementation of the Experiment interface.
 
-        :rtype string:
+        :rtype: :py:class:`str`
         :returns: The name of the enabled variant as a string if any variant is
         enabled.  If no variant is enabled, return None.
         """

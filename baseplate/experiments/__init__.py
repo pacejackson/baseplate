@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExperimentsContextFactory(ContextFactory):
-    """ Experiment manager context factory
+    """ Experiment client context factory
 
     This factory will attach a new :py:class:`baseplate.experiments.Experiments`
     to an attribute on the :term:`context object`.
@@ -88,7 +88,7 @@ class Experiments(object):
         :param kwargs:  Arguments that will be passed to experiment.variant to
             determine bucketing, targeting, and overrides.
 
-        :rtype str:
+        :rtype: :py:class:`str`
         :return: Variant name if a variant is active, None otherwise.
         """
         config = self._get_config(name)

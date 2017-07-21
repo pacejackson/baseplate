@@ -41,7 +41,7 @@ def parse_experiment(config):
         }
 
     :param dict config: Configuration dict for the experiment you wish to run.
-    :rtype baseplate.experiments.providers.base.Experiment:
+    :rtype: :py:class:`baseplate.experiments.providers.base.Experiment`
     :return: A subclass of :py:class:`Experiment` for the given experiment
         type.
     """
