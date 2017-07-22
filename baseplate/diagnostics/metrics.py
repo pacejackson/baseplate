@@ -50,7 +50,7 @@ class MetricsServerSpanObserver(SpanObserver):
 
     def on_log(self, name, payload):
         if name == "error.kind":
-            self.batch.counter.increment(payload)
+            self.batch.counter.increment("errors.%s" % payload)
 
     def on_child_span_created(self, span):
         if isinstance(span, LocalSpan):
