@@ -76,10 +76,11 @@ class R2Experiment(Experiment):
                 is not set, `name` is used as the seed.
             "newer_than": (Optional) The earliest time that a bucketing
                 resource can have been created by in UTC epoch seconds.  If
-                set, you must pass a datetime to the call to experiment.variant
-                as the "created" parameter. This value should be the time, in
-                UTC, when the resource that you are bucketing was created, such
-                as when a User account was created or when an LoID cookie was
+                set, you must pass the time, in UTC epoch seconds, when the
+                resource that you are bucketing was created to the call to
+                experiment.variant as the "created" parameter. For example, if
+                you are bucketing based on user_id, created would be set to the
+                time when a User account was created or when an LoID cookie was
                 generated.
         }
 
