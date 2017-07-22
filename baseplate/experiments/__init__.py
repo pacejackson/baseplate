@@ -97,11 +97,11 @@ class Experiments(object):
         :rtype: :py:class:`str`
         :return: Variant name if a variant is active, None otherwise.
         """
-        config = self._get_config(name)
-        if not config:
+        experiment_config = self._get_config(name)
+        if not experiment_config:
             return None
 
-        experiment = parse_experiment(config)
+        experiment = parse_experiment(experiment_config)
         variant = experiment.variant(**kwargs)
 
         do_log = True
