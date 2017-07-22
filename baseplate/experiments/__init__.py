@@ -57,8 +57,8 @@ class Experiments(object):
         try:
             config_data = self._config_watcher.get_data()
             return config_data[name]
-        except WatchedFileNotAvailableError:
-            logger.exception("Experiment config file not found")
+        except WatchedFileNotAvailableError as exc:
+            logger.warning("Experiment config unavailable: %s", str(exc))
             return
         except KeyError:
             logger.warning(
@@ -66,8 +66,8 @@ class Experiments(object):
                 name,
             )
             return
-        except TypeError:
-            logger.exception("Could not load experiment config: %r", name)
+        except TypeError as exc:
+            logger.warning("Could not load experiment config: %s", str(exc))
             return
 
     def variant(self, name, bucketing_event_override=None,
