@@ -48,6 +48,10 @@ class MetricsServerSpanObserver(SpanObserver):
         self.timer.stop()
         self.batch.flush()
 
+    def on_log(self, name, payload):
+        if name == "error.kind":
+            self.batch.counter.increment(payload)
+
     def on_child_span_created(self, span):
         if isinstance(span, LocalSpan):
             observer = MetricsLocalSpanObserver(self.batch, span)
