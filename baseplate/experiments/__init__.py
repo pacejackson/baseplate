@@ -35,7 +35,7 @@ class ExperimentsContextFactory(ContextFactory):
         self._event_queue = event_queue
 
     def make_object_for_context(self, name, server_span):
-        return Experiments(self._filewatcher, self._event_queue)
+        return Experiments(self._filewatcher, self._event_queue, server_span)
 
 
 class Experiments(object):
@@ -48,10 +48,11 @@ class Experiments(object):
     active variant.
     """
 
-    def __init__(self, config_watcher, event_queue=None):
+    def __init__(self, config_watcher, event_queue=None, server_span=None):
         self._config_watcher = config_watcher
         self._event_queue = event_queue
         self._already_bucketed = set()
+        self._server_span = server_span
 
     def _get_config(self, name):
         try:
@@ -147,8 +148,12 @@ class Experiments(object):
             logger.exception(
                 "The event payload was too large for the event queue."
             )
+            if self._server_span:
+                self._server_span.log("error.kind", "events.too_large")
         except EventQueueFullError:
             logger.exception("The event queue is full.")
+            if self._server_span:
+                self._server_span.log("error.kind", "events.queue_full")
 
 
 def experiments_client_from_config(app_config, event_queue=None):
