@@ -60,25 +60,27 @@ class R2Experiment(Experiment):
             "variants": Dict mapping variant names to their sizes. Variant
                 sizes are expressed as numeric percentages rather than a
                 fraction of 1 (that is, 1.5 means 1.5%, not 150%).
-            "targeting": Optional dict.  Maps the names of targeting parameters
-                to lists of valid values.  When determining the variant of an
-                experiment, the targeting parameters you want to use are passed
-                in as kwargs to the call to experiment.variant.
-            "overrides": Optional dict.  Maps override parameters to dicts that
-                map values to the value you want to override the variant to.
-                When determining the variant of an experiment, the override
-                parameters you want to use are passed in as kwargs to the call
-                to experiment.variant.
-            "bucket_val": Optional value, defaults to "user_id".  Name of the
-                parameter you want to use for bucketing.  This value must be
-                passed to the call to experiment.variant as a kwarg.
-            "seed": Optional value, overrides the seed for this experiment.  If
-                this is not set, `name` is used as the seed.
-            "newer_than": Optional value.  If set, you must pass a datetime
-                to the call to experiment.variant as the "created" parameter.
-                This value should be the time when the resource that you are
-                bucketing was created, such as when a User account was created
-                or when an LoID cookie was generated.
+            "targeting": (Optional) Dict that maps the names of targeting
+                parameters to lists of valid values.  When determining the
+                variant of an experiment, the targeting parameters you want to
+                use are passed in as kwargs to the call to experiment.variant.
+            "overrides": (Optional) Dict that maps override parameters to dicts
+                mapping values to the variant name you want to override the
+                variant to. When determining the variant of an experiment, the
+                override parameters you want to use are passed in as kwargs to
+                the call to experiment.variant.
+            "bucket_val": (Optional) Name of the parameter you want to use for
+                bucketing.  This value must be passed to the call to
+                experiment.variant as a kwarg.  Defaults to "user_id".
+            "seed": (Optional) Overrides the seed for this experiment.  If this
+                is not set, `name` is used as the seed.
+            "newer_than": (Optional) The earliest time that a bucketing
+                resource can have been created by in UTC epoch seconds.  If
+                set, you must pass a datetime to the call to experiment.variant
+                as the "created" parameter. This value should be the time, in
+                UTC, when the resource that you are bucketing was created, such
+                as when a User account was created or when an LoID cookie was
+                generated.
         }
 
         :param int id: The id of the experiment from the base config.
@@ -99,7 +101,7 @@ class R2Experiment(Experiment):
             newer_than=config.get("newer_than"),
         )
 
-    def event_cache_key(self, **kwargs):
+    def bucketing_event_id(self, **kwargs):
         if kwargs.get(self.bucket_val):
             return ":".join(
                 [self.name, self.bucket_val, str(kwargs[self.bucket_val])]
