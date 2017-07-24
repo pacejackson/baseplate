@@ -7,10 +7,12 @@ from .r2 import R2Experiment
 
 
 class FeatureFlag(R2Experiment):
-    """An experiment with a single variant "active" that does not log
-    bucketing events to the event pipeline.  Use this type of experiment if
-    you just want to control access to a feature but do not want to run an
-    actual experiment.  For example:
+    """An experiment with a single variant "active".
+
+    Does not log bucketing events to the event pipeline.  Use this type of
+    experiment if you just want to control access to a feature but do not want
+    to run an actual experiment.  Some examples for when you would want to use
+    a FeatureFlag are:
 
     1. Slowly rolling out a new feature to a % of users
     2. Restricting a new feature to certain subreddits

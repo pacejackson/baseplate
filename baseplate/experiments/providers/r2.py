@@ -14,8 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class R2Experiment(Experiment):
-    """A "legacy", r2-style experiment. Should log bucketing events to the
-    event pipeline.
+    """A "legacy", r2-style experiment.
+
+    Should log bucketing events to the event pipeline.
 
     Note that this style of experiment caps the size of your variants such
     that:
