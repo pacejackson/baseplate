@@ -155,13 +155,13 @@ class Experiments(object):
             try:
                 self._event_queue.put(event)
             except EventTooLargeError as exc:
-                logger.exception(
+                logger.warning(
                     "The event payload was too large for the event queue."
                 )
                 child_span.set_tag("error", True)
                 child_span.log("error.object", exc)
             except EventQueueFullError as exc:
-                logger.exception("The event queue is full.")
+                logger.warning("The event queue is full.")
                 child_span.set_tag("error", True)
                 child_span.log("error.object", exc)
 
