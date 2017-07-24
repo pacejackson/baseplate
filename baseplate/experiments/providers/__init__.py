@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 ISO_DATE_FMT = "%Y-%d-%m"
+VARIANT_NOT_SET = object()
 
 
 class Experiment(object):
@@ -36,6 +37,7 @@ class Experiment(object):
             self.name,
             self._provider.unique_id,
         ])
+        self._variant = VARIANT_NOT_SET
 
     @property
     def variant(self):
@@ -49,9 +51,10 @@ class Experiment(object):
         :returns: The name of the enabled variant as a string if any variant is
         enabled.  If no variant is enabled, return None.
         """
-        variant = self._provider.get_variant()
-        self._log_bucketing_event(variant)
-        return variant
+        if self._variant is VARIANT_NOT_SET:
+            self._variant = self._provider.get_variant()
+        self._log_bucketing_event(self._variant)
+        return self._variant
 
     @property
     def unique_id(self):

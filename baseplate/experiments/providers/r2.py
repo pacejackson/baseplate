@@ -13,9 +13,6 @@ from ..._compat import long, iteritems, string_types
 logger = logging.getLogger(__name__)
 
 
-NOT_SET = object()
-
-
 class R2Experiment(BaseExperimentProvider):
     """A "legacy", r2-style experiment.
 
@@ -81,8 +78,6 @@ class R2Experiment(BaseExperimentProvider):
         self.newer_than = newer_than
         self._experiment_args = {k.lower(): v for k, v in iteritems(kwargs)}
         self.bucket_val = self._experiment_args.pop(bucket_arg.lower())
-        self._variant = NOT_SET
-
 
     @classmethod
     def from_dict(cls, name, config, **kwargs):
@@ -106,11 +101,6 @@ class R2Experiment(BaseExperimentProvider):
         )
 
     def get_variant(self):
-        if self._variant is NOT_SET:
-            self._variant = self._calculate_variant()
-        return self._variant
-
-    def _calculate_variant(self):
         variant = self._check_overrides(**self._experiment_args)
         if variant is not None and variant in self.variants:
             return variant
