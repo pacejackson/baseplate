@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class R2Experiment(Experiment):
-    """ A "legacy", r2-style experiment. Should log bucketing events to the
+    """A "legacy", r2-style experiment. Should log bucketing events to the
     event pipeline.
 
     Note that this style of experiment caps the size of your variants such
@@ -52,7 +52,7 @@ class R2Experiment(Experiment):
 
     @classmethod
     def from_dict(cls, id, name, owner, config):
-        """ Parse the config dict and return a new R2Experiment object.
+        """Parse the config dict and return a new R2Experiment object.
 
         The config dict is expected to have the following format:
 
@@ -133,7 +133,7 @@ class R2Experiment(Experiment):
         return self._choose_variant(bucket)
 
     def _check_overrides(self, **kwargs):
-        """ Check if any of the kwargs override the variant. """
+        """Check if any of the kwargs override the variant. """
         for override_arg in self.overrides:
             if override_arg in kwargs:
                 values = kwargs[override_arg]
@@ -146,7 +146,7 @@ class R2Experiment(Experiment):
         return None
 
     def _is_enabled(self, **kwargs):
-        """ Check if the targeting parameters in kwargs allow us to perform
+        """Check if the targeting parameters in kwargs allow us to perform
         the experiment.
         """
         for targeting_param, allowed_values in iteritems(self.targeting):

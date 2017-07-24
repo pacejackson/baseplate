@@ -18,7 +18,7 @@ ISO_DATE_FMT = "%Y-%d-%m"
 
 
 def parse_experiment(config):
-    """ Factory method that parses an experiment config dict and returns an
+    """Factory method that parses an experiment config dict and returns an
     appropriate Experiment class.
 
     The config dict is expected to have the following format:

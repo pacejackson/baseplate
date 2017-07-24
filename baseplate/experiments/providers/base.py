@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 
 
 class Experiment(object):
-    """ Base interface for experiment objects. """
+    """Base interface for experiment objects. """
 
     def bucketing_event_id(self, **kwargs):
-        """ Key used to track if a bucketing event has been fired for the
+        """Key used to track if a bucketing event has been fired for the
         current experiment.  Returns None by default.  If None is returned,
         we will not mark that a bucketing event has been logged even if we do
         log a bucketing event.  The kwargs should be the same values passed to
@@ -22,7 +22,7 @@ class Experiment(object):
         return None
 
     def variant(self, **kwargs):
-        """ Determine which variant, if any, of this experiment is active.
+        """Determine which variant, if any, of this experiment is active.
 
         All arguments needed for bucketing, targeting, and variant overrides
         should be passed in as kwargs.  The parameter names are determined by

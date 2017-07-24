@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 
 
 class ExperimentsContextFactory(ContextFactory):
-    """ Experiment client context factory
+    """Experiment client context factory
 
     This factory will attach a new :py:class:`baseplate.experiments.Experiments`
     to an attribute on the :term:`context object`.
     """
     def __init__(self, path, event_queue):
-        """ ExperimentContextFactory constructor
+        """ExperimentContextFactory constructor
 
         :param str path: Path to the experiment config file.
         :param baseplate.events.EventQueue event_queue: Event queue used for
@@ -39,7 +39,7 @@ class ExperimentsContextFactory(ContextFactory):
 
 
 class Experiments(object):
-    """ Access to experiments with automatic refresh when changed.
+    """Access to experiments with automatic refresh when changed.
 
     This experiments client allows access to the experiments cached on disk
     by the experiment config fetcher daemon.  It will automatically reload
@@ -73,7 +73,7 @@ class Experiments(object):
 
     def variant(self, name, bucketing_event_override=None,
                 extra_event_fields=None, **kwargs):
-        """ Which variant, if any, is active.
+        """Which variant, if any, is active.
 
         If a variant is active, a bucketing event will be logged to the event
         pipeline unless any one of the following conditions are met:

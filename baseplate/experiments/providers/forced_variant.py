@@ -7,7 +7,7 @@ from .base import Experiment
 
 
 class ForcedVariantExperiment(Experiment):
-    """ An experiment that always returns a specified variant.  Should not log
+    """An experiment that always returns a specified variant.  Should not log
     bucketing events to the event pipeline.
     """
 
