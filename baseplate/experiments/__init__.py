@@ -7,6 +7,7 @@ import json
 import logging
 
 from .providers import parse_experiment
+from .event_logger import EventQueueLogger
 from .. import config
 from .._compat import iteritems
 from ..context import ContextFactory
@@ -55,10 +56,12 @@ class Experiments(object):
 
     def __init__(self, config_watcher, event_queue, server_span, context_name):
         self._config_watcher = config_watcher
-        self._event_queue = event_queue
-        self._span = server_span
-        self._context_name = context_name
-        self._already_bucketed = set()
+        self._logger = EventQueueLogger(
+            context_name=context_name,
+            server_span=server_span,
+            event_queue=event_queue,
+        )
+        self._cache = {}
 
     def _get_config(self, name):
         try:
@@ -77,14 +80,14 @@ class Experiments(object):
             logger.warning("Could not load experiment config: %s", str(exc))
             return
 
-    def variant(self, name, bucketing_event_override=None,
-                extra_event_fields=None, **kwargs):
+    def get_experiment(self, name, bucket_event_override=None,
+                       extra_event_fields=None, **kwargs):
         """Which variant, if any, is active.
 
         If a variant is active, a bucketing event will be logged to the event
         pipeline unless any one of the following conditions are met:
 
-        1. bucketing_event_override is set to False.
+        1. bucket_event_override is set to False.
         2. The experiment specified by "name" explicitly disables bucketing
            events.
         3. We have already logged a bucketing event for the value specified by
@@ -92,7 +95,7 @@ class Experiments(object):
            request.
 
         :param str name: Name of the experiment you want to run.
-        :param bool bucketing_event_override: (Optional) If set to True, will
+        :param bool bucket_event_override: (Optional) If set to True, will
             always log bucketing events unless the experiment explicitly
             disables them.  If set to False, will never send a bucketing event.
             If set to None, no override will be applied.  Set to None by
@@ -109,61 +112,16 @@ class Experiments(object):
         if not experiment_config:
             return None
 
-        experiment = parse_experiment(experiment_config)
-        variant = experiment.variant(**kwargs)
-
-        do_log = True
-
-        if variant is None:
-            do_log = False
-
-        bucketing_id = experiment.bucketing_event_id(**kwargs)
-
-        if bucketing_id and bucketing_id in self._already_bucketed:
-            do_log = False
-
-        if bucketing_event_override is not None:
-            do_log = bool(bucketing_event_override)
-
-        do_log = do_log and experiment.should_log_bucketing()
-
-        if do_log:
-            self._log_bucketing_event(experiment, variant, extra_event_fields)
-            if bucketing_id:
-                self._already_bucketed.add(bucketing_id)
-
-        return variant
-
-    def _log_bucketing_event(self, experiment, variant, extra_event_fields):
-        if not self._event_queue:
-            return
-
-        extra_event_fields = extra_event_fields or {}
-
-        event_type = "bucket"
-        event = Event("bucketing_events", event_type)
-        for field, value in iteritems(extra_event_fields):
-            event.set_field(field, value)
-
-        event.set_field("variant", variant)
-        event.set_field("experiment_id", experiment.id)
-        event.set_field("experiment_name", experiment.name)
-        event.set_field("owner", experiment.owner)
-        event.set_field("request_id", self._span.trace_id)
-        span_name = "{}.{}".format(self._context_name, "events")
-        with self._span.make_child(span_name) as child_span:
-            try:
-                self._event_queue.put(event)
-            except EventTooLargeError as exc:
-                logger.warning(
-                    "The event payload was too large for the event queue."
-                )
-                child_span.set_tag("error", True)
-                child_span.log("error.object", exc)
-            except EventQueueFullError as exc:
-                logger.warning("The event queue is full.")
-                child_span.set_tag("error", True)
-                child_span.log("error.object", exc)
+        experiment = parse_experiment(
+            config=experiment_config,
+            event_logger=self._logger,
+            bucket_event_override=bucket_event_override,
+            extra_event_fields=extra_event_fields,
+            **kwargs
+        )
+        if experiment.unique_id not in self._cache:
+            self._cache[experiment.unique_id] = experiment
+        return self._cache[experiment.unique_id]
 
 
 def experiments_client_from_config(app_config, event_queue):

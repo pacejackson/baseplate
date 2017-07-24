@@ -99,14 +99,14 @@ class TestExperiments(unittest.TestCase):
             p.return_value="active"
             self.assertEqual(self.event_queue.put.call_count, 0)
             experiments.variant("test", user_id=self.user_id,
-                                bucketing_event_override=True)
+                                bucket_event_override=True)
             self.assertEqual(self.event_queue.put.call_count, 1)
             experiments.variant("test", user_id=self.user_id,
-                                bucketing_event_override=True)
+                                bucket_event_override=True)
             self.assertEqual(self.event_queue.put.call_count, 2)
             p.return_value = None
             experiments.variant("test", user_id=self.user_id,
-                                bucketing_event_override=True)
+                                bucket_event_override=True)
             self.assertEqual(self.event_queue.put.call_count, 3)
 
     def test_that_bucketing_events_are_not_sent_with_override_false(self):
@@ -139,14 +139,14 @@ class TestExperiments(unittest.TestCase):
             p.return_value="active"
             self.assertEqual(self.event_queue.put.call_count, 0)
             experiments.variant("test", user_id=self.user_id,
-                                bucketing_event_override=False)
+                                bucket_event_override=False)
             self.assertEqual(self.event_queue.put.call_count, 0)
             experiments.variant("test", user_id=self.user_id,
-                                bucketing_event_override=False)
+                                bucket_event_override=False)
             self.assertEqual(self.event_queue.put.call_count, 0)
             p.return_value = None
             experiments.variant("test", user_id=self.user_id,
-                                bucketing_event_override=False)
+                                bucket_event_override=False)
             self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_no_variant(self):
@@ -220,7 +220,7 @@ class TestExperiments(unittest.TestCase):
             experiments.variant("test", user_id=self.user_id)
             self.assertEqual(self.event_queue.put.call_count, 0)
             experiments.variant("test", user_id=self.user_id,
-                                bucketing_event_override=True)
+                                bucket_event_override=True)
             self.assertEqual(self.event_queue.put.call_count, 0)
 
     def test_that_bucketing_events_not_sent_if_cant_load_config(self):

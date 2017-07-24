@@ -31,6 +31,11 @@ class Experiment(object):
         self._has_sent_bucketing_event = False
         self._extra_event_fields = extra_event_fields or {}
         self._bucket_event_override = bucket_event_override
+        self._unique_id = ".".join([
+            str(self.id),
+            self.name,
+            self._provider.unique_id,
+        ])
 
     @property
     def variant(self):
@@ -47,6 +52,10 @@ class Experiment(object):
         variant = self._provider.get_variant()
         self._log_bucketing_event(variant)
         return variant
+
+    @property
+    def unique_id(self):
+        return self._unique_id
 
     def _log_bucketing_event(self, variant):
         do_log = True
