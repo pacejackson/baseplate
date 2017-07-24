@@ -35,7 +35,7 @@ class Experiment(object):
         self._unique_id = ".".join([
             str(self.id),
             self.name,
-            self._provider.unique_id,
+            self._provider.get_unique_id(),
         ])
         self._variant = VARIANT_NOT_SET
 

@@ -78,6 +78,7 @@ class R2Experiment(BaseExperimentProvider):
         self.newer_than = newer_than
         self._experiment_args = {k.lower(): v for k, v in iteritems(kwargs)}
         self.bucket_val = self._experiment_args.pop(bucket_arg.lower())
+        self._unique_id = "{}.{}".format(bucket_arg, str(self.bucket_val))
 
     @classmethod
     def from_dict(cls, name, config, **kwargs):
@@ -99,6 +100,9 @@ class R2Experiment(BaseExperimentProvider):
             newer_than=config.get("newer_than"),
             **kwargs
         )
+
+    def get_unique_id(self):
+        return self._unique_id
 
     def get_variant(self):
         variant = self._check_overrides(**self._experiment_args)

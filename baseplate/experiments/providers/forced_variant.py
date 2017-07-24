@@ -20,3 +20,6 @@ class ForcedVariantExperiment(BaseExperimentProvider):
 
     def get_variant(self):
         return self._variant
+
+    def get_unique_id(self):
+        return str(self._variant).lower()

@@ -19,3 +19,6 @@ class BaseExperimentProvider(object):
         enabled.  If no variant is enabled, return None.
         """
         raise NotImplementedError
+
+    def get_unique_id(self):
+        raise NotImplementedError
