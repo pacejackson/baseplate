@@ -29,7 +29,7 @@ class ExperimentsContextFactory(ContextFactory):
         :param str path: Path to the experiment config file.
         :param baseplate.events.EventQueue event_queue: Event queue used for
             logging bucketing events to the event pipeline.  You can set this
-            to None to disabled bucketing events entirely.
+            to None to disable bucketing events entirely.
         """
         self._filewatcher = FileWatcher(path, json.load)
         self._event_queue = event_queue

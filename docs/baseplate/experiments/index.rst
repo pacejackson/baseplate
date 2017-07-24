@@ -18,6 +18,8 @@ Configuration Parsing
 
 .. autofunction:: baseplate.experiments.experiments_client_from_config
 
+.. autofunction:: baseplate.experiments.providers.parse_experiment
+
 Classes
 -------
 
