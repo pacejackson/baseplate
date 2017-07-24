@@ -6,14 +6,17 @@ from __future__ import unicode_literals
 import logging
 import hashlib
 
-from .base import Experiment
+from .base import BaseExperimentProvider
 from ..._compat import long, iteritems, string_types
 
 
 logger = logging.getLogger(__name__)
 
 
-class R2Experiment(Experiment):
+NOT_SET = object()
+
+
+class R2Experiment(BaseExperimentProvider):
     """A "legacy", r2-style experiment.
 
     Should log bucketing events to the event pipeline.
@@ -40,7 +43,7 @@ class R2Experiment(Experiment):
           the variant to. When determining the variant of an experiment, the
           override parameters you want to use are passed in as keyword
           arguments to the call to experiment.variant.
-        * **bucket_val**: (Optional) Name of the parameter you want to use for
+        * **bucket_arg**: (Optional) Name of the parameter you want to use for
           bucketing.  This value must be passed to the call to
           experiment.variant as a keyword argument.  Defaults to "user_id".
         * **seed**: (Optional) Overrides the seed for this experiment.  If this
@@ -55,9 +58,8 @@ class R2Experiment(Experiment):
 
     """
 
-    def __init__(self, id, name, owner, variants, seed=None,
-                 bucket_val="user_id", targeting=None, overrides=None,
-                 newer_than=None):
+    def __init__(self, variants, seed=None, bucket_arg="user_id",
+                 targeting=None, overrides=None, newer_than=None, **kwargs):
         targeting = targeting or {}
         overrides = overrides or {}
         self.targeting = {}
@@ -73,17 +75,17 @@ class R2Experiment(Experiment):
             assert isinstance(value, dict)
             key = param.lower()
             self.overrides[key] = {k.lower(): v for k, v in iteritems(value)}
-        self.id = id
-        self.name = name
-        self.owner = owner
-        self.seed = seed if seed else name
+        self.seed = seed
         self.num_buckets = 1000
         self.variants = variants
-        self.bucket_val = bucket_val
         self.newer_than = newer_than
+        self._experiment_args = {k.lower(): v for k, v in iteritems(kwargs)}
+        self.bucket_val = self._experiment_args.pop(bucket_arg.lower())
+        self._variant = NOT_SET
+
 
     @classmethod
-    def from_dict(cls, id, name, owner, config):
+    def from_dict(cls, name, config, **kwargs):
         """Parse the config dict and return a new R2Experiment object.
 
         :param int id: The id of the experiment from the base config.
@@ -93,45 +95,30 @@ class R2Experiment(Experiment):
         :rtype: :py:class:`baseplate.experiments.providers.r2.R2Experiment`
         """
         return cls(
-            id=id,
             name=name,
-            owner=owner,
             variants=config["variants"],
             targeting=config.get("targeting"),
             overrides=config.get("overrides"),
-            seed=config.get("seed"),
-            bucket_val=config.get("bucket_val", "user_id"),
+            seed=config.get("seed", name),
+            bucket_arg=config.get("bucket_arg", "user_id"),
             newer_than=config.get("newer_than"),
+            **kwargs
         )
 
-    def bucketing_event_id(self, **kwargs):
-        if kwargs.get(self.bucket_val):
-            return ":".join(
-                [self.name, self.bucket_val, str(kwargs[self.bucket_val])]
-            )
-        else:
-            return None
+    def get_variant(self):
+        if self._variant is NOT_SET:
+            self._variant = self._calculate_variant()
+        return self._variant
 
-    def should_log_bucketing(self):
-        return True
-
-    def variant(self, **kwargs):
-        lower_kwargs = {k.lower(): v for k, v in iteritems(kwargs)}
-        if self.bucket_val not in lower_kwargs:
-            raise ValueError(
-                "Must specify %s in call to variant for experiment %s.",
-                self.bucket_val,
-                self.name,
-            )
-
-        variant = self._check_overrides(**lower_kwargs)
+    def _calculate_variant(self):
+        variant = self._check_overrides(**self._experiment_args)
         if variant is not None and variant in self.variants:
             return variant
 
-        if not self._is_enabled(**lower_kwargs):
+        if not self._is_enabled(**self._experiment_args):
             return None
 
-        bucket = self._calculate_bucket(lower_kwargs[self.bucket_val])
+        bucket = self._calculate_bucket(self.bucket_val)
         return self._choose_variant(bucket)
 
     def _check_overrides(self, **kwargs):

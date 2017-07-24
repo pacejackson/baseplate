@@ -3,10 +3,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from .base import Experiment
+from .base import BaseExperimentProvider
 
 
-class ForcedVariantExperiment(Experiment):
+class ForcedVariantExperiment(BaseExperimentProvider):
     """An experiment that always returns a specified variant.
 
     Should not log bucketing events to the event pipeline.  Note that
@@ -18,8 +18,5 @@ class ForcedVariantExperiment(Experiment):
     def __init__(self, variant):
         self._variant = variant
 
-    def variant(self, **kwargs):
+    def get_variant(self):
         return self._variant
-
-    def should_log_bucketing(self):
-        return False

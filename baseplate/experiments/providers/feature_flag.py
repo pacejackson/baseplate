@@ -48,15 +48,7 @@ class FeatureFlag(R2Experiment):
     """
 
     @classmethod
-    def from_dict(cls, id, name, owner, config):
+    def from_dict(cls, name, config, **kwargs):
         variants = config.get("variants", {})
         assert not set(variants.keys()) - {"active"}
-        return super(FeatureFlag, cls).from_dict(
-            id=id,
-            name=name,
-            owner=owner,
-            config=config,
-        )
-
-    def should_log_bucketing(self):
-        return False
+        return super(FeatureFlag, cls).from_dict(name, config, **kwargs)

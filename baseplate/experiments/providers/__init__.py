@@ -11,13 +11,69 @@ from .feature_flag import FeatureFlag
 from .forced_variant import ForcedVariantExperiment
 from .r2 import R2Experiment
 
+from ..event_logger import NullEventLogger
+
 logger = logging.getLogger(__name__)
 
 
 ISO_DATE_FMT = "%Y-%d-%m"
 
 
-def parse_experiment(config):
+class Experiment(object):
+
+    def __init__(self, id, name, owner, event_logger, provider,
+                 bucket_event_override=None, extra_event_fields=None):
+        self.id = id
+        self.name = name
+        self.owner = owner
+        self._logger = event_logger
+        self._provider = provider
+        self._has_sent_bucketing_event = False
+        self._extra_event_fields = extra_event_fields or {}
+        self._bucket_event_override = bucket_event_override
+
+    @property
+    def variant(self):
+        """Determine which variant, if any, of this experiment is active.
+
+        All arguments needed for bucketing, targeting, and variant overrides
+        should be passed in as kwargs.  The parameter names are determined by
+        the specific implementation of the Experiment interface.
+
+        :rtype: :py:class:`str`
+        :returns: The name of the enabled variant as a string if any variant is
+        enabled.  If no variant is enabled, return None.
+        """
+        variant = self._provider.get_variant()
+        self._log_bucketing_event(variant)
+        return variant
+
+    def _log_bucketing_event(self, variant):
+        do_log = True
+
+        if variant is None:
+            do_log = False
+
+        if self._has_sent_bucketing_event:
+            do_log = False
+
+        if self._bucket_event_override is not None:
+            do_log = bool(self._bucket_event_override)
+
+        if do_log:
+            fields = dict(
+                variant=variant,
+                experiment_id=self.id,
+                experiment_name=self.name,
+                owner=self.owner,
+            )
+            fields.update(self._extra_event_fields)
+            self._logger.log("bucketing_events", "bucket", **fields)
+            self._has_sent_bucketing_event = True
+
+
+def parse_experiment(config, event_logger, bucket_event_override=None,
+                     extra_event_fields=None, **kwargs):
     """Factory method that parses an experiment config dict and returns an
     appropriate Experiment class.
 
@@ -58,32 +114,68 @@ def parse_experiment(config):
     expiration = datetime.strptime(config["expires"], ISO_DATE_FMT).date()
 
     if datetime.utcnow().date() > expiration:
-        return ForcedVariantExperiment(None)
+        return Experiment(
+            id=experiment_id,
+            name=name,
+            owner=owner,
+            event_logger=NullEventLogger(),
+            provider=ForcedVariantExperiment(None),
+        )
 
     enabled = config.get("enabled", True)
     if not enabled:
-        return ForcedVariantExperiment(None)
+        return Experiment(
+            id=experiment_id,
+            name=name,
+            owner=owner,
+            event_logger=NullEventLogger(),
+            bucket_event_override=bucket_event_override,
+            extra_event_fields=extra_event_fields,
+            provider=ForcedVariantExperiment(None),
+        )
 
     if "global_override" in config:
         # We want to check if "global_override" is in config rather than
         # checking config.get("global_override") because global_override = None
         # is a valid setting.
         override = config.get("global_override")
-        return ForcedVariantExperiment(override)
+        return Experiment(
+            id=experiment_id,
+            name=name,
+            owner=owner,
+            event_logger=NullEventLogger(),
+            bucket_event_override=bucket_event_override,
+            extra_event_fields=extra_event_fields,
+            provider=ForcedVariantExperiment(override),
+        )
 
     if experiment_type == "r2":
-        return R2Experiment.from_dict(
+        return Experiment(
             id=experiment_id,
             name=name,
             owner=owner,
-            config=experiment_config,
+            event_logger=event_logger,
+            bucket_event_override=bucket_event_override,
+            extra_event_fields=extra_event_fields,
+            provider=R2Experiment.from_dict(
+                name=name,
+                config=experiment_config,
+                **kwargs
+            ),
         )
     elif experiment_type == "feature_flag":
-        return FeatureFlag.from_dict(
+        return Experiment(
             id=experiment_id,
             name=name,
             owner=owner,
-            config=experiment_config,
+            event_logger=NullEventLogger(),
+            bucket_event_override=bucket_event_override,
+            extra_event_fields=extra_event_fields,
+            provider=FeatureFlag.from_dict(
+                name=name,
+                config=experiment_config,
+                **kwargs
+            ),
         )
     else:
         logger.warning(
@@ -94,7 +186,15 @@ def parse_experiment(config):
             experiment_type,
             owner,
         )
-        return ForcedVariantExperiment(None)
+        return Experiment(
+            id=experiment_id,
+            name=name,
+            owner=owner,
+            event_logger=NullEventLogger(),
+            bucket_event_override=bucket_event_override,
+            extra_event_fields=extra_event_fields,
+            provider=ForcedVariantExperiment(None),
+        )
 
 
 __all__ = ["parse_experiment"]
