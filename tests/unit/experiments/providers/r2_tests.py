@@ -10,6 +10,7 @@ import unittest
 from datetime import datetime, timedelta
 
 from baseplate._compat import iteritems, long, range
+from baseplate.core import ServerSpan
 from baseplate.events import EventQueue
 from baseplate.experiments import ExperimentsContextFactory
 from baseplate.experiments.providers import ISO_DATE_FMT, parse_experiment
@@ -355,7 +356,9 @@ class TestSimulatedR2Experiments(unittest.TestCase):
             experiment_vars.update(static_vars)
             user = experiment_vars.pop("user")
             content = experiment_vars.pop("content")
-            experiments = self.factory.make_object_for_context(None, None)
+            span = mock.MagicMock(spec=ServerSpan)
+            span.trace_id = "123456"
+            experiments = self.factory.make_object_for_context("test", span)
             variant = experiments.variant(
                 config["name"],
                 user_id=user["id"],
@@ -414,7 +417,9 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         content = content or dict(id=None, type=None)
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for user in users:
-            experiments = self.factory.make_object_for_context(None, None)
+            span = mock.MagicMock(spec=ServerSpan)
+            span.trace_id = "123456"
+            experiments = self.factory.make_object_for_context("test", span)
             self.assertIs(
                 experiments.variant(
                     config["name"],
@@ -429,7 +434,9 @@ class TestSimulatedR2Experiments(unittest.TestCase):
     def assert_no_page_experiment(self, user, pages, config):
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         for page in pages:
-            experiments = self.factory.make_object_for_context(None, None)
+            span = mock.MagicMock(spec=ServerSpan)
+            span.trace_id = "123456"
+            experiments = self.factory.make_object_for_context("test", span)
             self.assertIs(
                 experiments.variant(
                     config["name"],
@@ -446,7 +453,9 @@ class TestSimulatedR2Experiments(unittest.TestCase):
         self.mock_filewatcher.get_data.return_value = {config["name"]: config}
         content = content or dict(id=None, type=None)
         for user in users:
-            experiments = self.factory.make_object_for_context(None, None)
+            span = mock.MagicMock(spec=ServerSpan)
+            span.trace_id = "123456"
+            experiments = self.factory.make_object_for_context("test", span)
             self.assertEqual(
                 experiments.variant(
                     config["name"],

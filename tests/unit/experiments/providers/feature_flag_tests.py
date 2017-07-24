@@ -11,6 +11,7 @@ import unittest
 from datetime import datetime, timedelta
 
 from baseplate._compat import range
+from baseplate.core import ServerSpan
 from baseplate.events import EventQueue
 from baseplate.experiments import Experiments
 from baseplate.experiments.providers import ISO_DATE_FMT, parse_experiment
@@ -42,6 +43,7 @@ class TestFeatureFlag(unittest.TestCase):
     def test_does_not_log_bucketing_event(self):
         event_queue = mock.Mock(spec=EventQueue)
         filewatcher = mock.Mock(spec=FileWatcher)
+        span = mock.MagicMock(spec=ServerSpan)
         filewatcher.get_data.return_value = {
             "test": {
                 "id": 1,
@@ -58,7 +60,12 @@ class TestFeatureFlag(unittest.TestCase):
                 },
             },
         }
-        experiments = Experiments(filewatcher, event_queue)
+        experiments = Experiments(
+            config_watcher=filewatcher,
+            event_queue=event_queue,
+            server_span=span,
+            context_name="test",
+        )
         self.assertEqual(event_queue.put.call_count, 0)
         variant = experiments.variant(
             "test",

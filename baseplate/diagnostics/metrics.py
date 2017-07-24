@@ -48,10 +48,6 @@ class MetricsServerSpanObserver(SpanObserver):
         self.timer.stop()
         self.batch.flush()
 
-    def on_log(self, name, payload):
-        if name == "error.kind":
-            self.batch.counter.increment("errors.%s" % payload)
-
     def on_child_span_created(self, span):
         if isinstance(span, LocalSpan):
             observer = MetricsLocalSpanObserver(self.batch, span)
@@ -84,3 +80,7 @@ class MetricsClientSpanObserver(SpanObserver):
         self.timer.stop()
         suffix = "success" if not exc_info else "failure"
         self.batch.counter(self.base_name + "." + suffix).increment()
+
+    def on_log(self, name, payload):
+        if name == "error.object":
+            self.batch.counter.increment("errors.%s" % payload.__name__.lower())

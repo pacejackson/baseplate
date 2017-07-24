@@ -7,6 +7,7 @@ import unittest
 
 from datetime import datetime, timedelta
 
+from baseplate.core import ServerSpan
 from baseplate.events import EventQueue
 from baseplate.experiments import (
     Experiments,
@@ -27,6 +28,8 @@ class TestExperiments(unittest.TestCase):
         super(TestExperiments, self).setUp()
         self.event_queue = mock.Mock(spec=EventQueue)
         self.mock_filewatcher = mock.Mock(spec=FileWatcher)
+        self.mock_span = mock.MagicMock(spec=ServerSpan)
+        self.mock_span.trace_id = "123456"
         self.user_id = "t2_1"
         self.user_name = "gary"
 
@@ -49,7 +52,12 @@ class TestExperiments(unittest.TestCase):
                 }
             }
         }
-        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        experiments = Experiments(
+            config_watcher=self.mock_filewatcher,
+            event_queue=self.event_queue,
+            server_span=self.mock_span,
+            context_name="test",
+        )
 
         with mock.patch(
             "baseplate.experiments.providers.r2.R2Experiment.variant",
@@ -79,7 +87,12 @@ class TestExperiments(unittest.TestCase):
                 }
             }
         }
-        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        experiments = Experiments(
+            config_watcher=self.mock_filewatcher,
+            event_queue=self.event_queue,
+            server_span=self.mock_span,
+            context_name="test",
+        )
         with mock.patch(
             "baseplate.experiments.providers.r2.R2Experiment.variant",
         ) as p:
@@ -114,7 +127,12 @@ class TestExperiments(unittest.TestCase):
                 }
             }
         }
-        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        experiments = Experiments(
+            config_watcher=self.mock_filewatcher,
+            event_queue=self.event_queue,
+            server_span=self.mock_span,
+            context_name="test",
+        )
         with mock.patch(
             "baseplate.experiments.providers.r2.R2Experiment.variant",
         ) as p:
@@ -148,7 +166,12 @@ class TestExperiments(unittest.TestCase):
                 }
             }
         }
-        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        experiments = Experiments(
+            config_watcher=self.mock_filewatcher,
+            event_queue=self.event_queue,
+            server_span=self.mock_span,
+            context_name="test",
+        )
 
         with mock.patch(
             "baseplate.experiments.providers.r2.R2Experiment.variant",
@@ -177,7 +200,12 @@ class TestExperiments(unittest.TestCase):
                 }
             }
         }
-        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        experiments = Experiments(
+            config_watcher=self.mock_filewatcher,
+            event_queue=self.event_queue,
+            server_span=self.mock_span,
+            context_name="test",
+        )
 
         with mock.patch(
             "baseplate.experiments.providers.r2.R2Experiment.variant",
@@ -197,7 +225,12 @@ class TestExperiments(unittest.TestCase):
 
     def test_that_bucketing_events_not_sent_if_cant_load_config(self):
         self.mock_filewatcher.get_data.side_effect = WatchedFileNotAvailableError("path", None)  # noqa
-        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        experiments = Experiments(
+            config_watcher=self.mock_filewatcher,
+            event_queue=self.event_queue,
+            server_span=self.mock_span,
+            context_name="test",
+        )
         self.assertEqual(self.event_queue.put.call_count, 0)
         experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
@@ -206,7 +239,12 @@ class TestExperiments(unittest.TestCase):
 
     def test_that_bucketing_events_not_sent_if_cant_parse_config(self):
         self.mock_filewatcher.get_data.side_effect = TypeError()
-        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        experiments = Experiments(
+            config_watcher=self.mock_filewatcher,
+            event_queue=self.event_queue,
+            server_span=self.mock_span,
+            context_name="test",
+        )
         self.assertEqual(self.event_queue.put.call_count, 0)
         experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)
@@ -230,7 +268,12 @@ class TestExperiments(unittest.TestCase):
                 }
             }
         }
-        experiments = Experiments(self.mock_filewatcher, self.event_queue)
+        experiments = Experiments(
+            config_watcher=self.mock_filewatcher,
+            event_queue=self.event_queue,
+            server_span=self.mock_span,
+            context_name="test",
+        )
         self.assertEqual(self.event_queue.put.call_count, 0)
         experiments.variant("test", user_id=self.user_id)
         self.assertEqual(self.event_queue.put.call_count, 0)

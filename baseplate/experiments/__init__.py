@@ -35,7 +35,12 @@ class ExperimentsContextFactory(ContextFactory):
         self._event_queue = event_queue
 
     def make_object_for_context(self, name, server_span):
-        return Experiments(self._filewatcher, self._event_queue, server_span)
+        return Experiments(
+            config_watcher=self._filewatcher,
+            event_queue=self._event_queue,
+            server_span=server_span,
+            context_name=name,
+        )
 
 
 class Experiments(object):
@@ -48,11 +53,12 @@ class Experiments(object):
     active variant.
     """
 
-    def __init__(self, config_watcher, event_queue=None, server_span=None):
+    def __init__(self, config_watcher, event_queue, server_span, context_name):
         self._config_watcher = config_watcher
         self._event_queue = event_queue
+        self._span = server_span
+        self._context_name = context_name
         self._already_bucketed = set()
-        self._server_span = server_span
 
     def _get_config(self, name):
         try:
@@ -142,18 +148,21 @@ class Experiments(object):
         event.set_field("experiment_id", experiment.id)
         event.set_field("experiment_name", experiment.name)
         event.set_field("owner", experiment.owner)
-        try:
-            self._event_queue.put(event)
-        except EventTooLargeError:
-            logger.exception(
-                "The event payload was too large for the event queue."
-            )
-            if self._server_span:
-                self._server_span.log("error.kind", "events.too_large")
-        except EventQueueFullError:
-            logger.exception("The event queue is full.")
-            if self._server_span:
-                self._server_span.log("error.kind", "events.queue_full")
+        event.set_field("request_id", self._span.trace_id)
+        span_name = "{}.{}".format(self._context_name, "events")
+        with self._span.make_child(span_name) as child_span:
+            try:
+                self._event_queue.put(event)
+            except EventTooLargeError as exc:
+                logger.exception(
+                    "The event payload was too large for the event queue."
+                )
+                child_span.set_tag("error", True)
+                child_span.log("error.object", exc)
+            except EventQueueFullError as exc:
+                logger.exception("The event queue is full.")
+                child_span.set_tag("error", True)
+                child_span.log("error.object", exc)
 
 
 def experiments_client_from_config(app_config, event_queue=None):
