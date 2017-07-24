@@ -88,7 +88,8 @@ class Experiments(object):
         2. The experiment specified by "name" explicitly disables bucketing
            events.
         3. We have already logged a bucketing event for the value specified by
-           experiment.bucketing_event_id(**kwargs) within the current request.
+           experiment.bucketing_event_id(\*\*kwargs) within the current
+           request.
 
         :param str name: Name of the experiment you want to run.
         :param bool bucketing_event_override: (Optional) If set to True, will

@@ -6,4 +6,4 @@
 Classes
 -------
 
-.. autoclass:: baseplate.experiments.providers.forced_variant.ForcedVariantExperiment
+.. autoclass:: ForcedVariantExperiment

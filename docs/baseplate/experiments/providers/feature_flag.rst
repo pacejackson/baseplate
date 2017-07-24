@@ -6,4 +6,4 @@
 Classes
 -------
 
-.. autoclass:: baseplate.experiments.providers.feature_flag.FeatureFlag
+.. autoclass:: FeatureFlag
