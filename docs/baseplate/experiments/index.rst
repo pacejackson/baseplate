@@ -1,0 +1,27 @@
+``baseplate.experiments``
+===============================
+
+.. automodule:: baseplate.experiments
+
+Configuration Parsing
+---------------------
+
+.. autofunction:: baseplate.experiments.experiments_client_from_config
+
+Classes
+-------
+
+.. autoclass:: baseplate.experiments.ExperimentsContextFactory
+
+.. autoclass:: baseplate.experiments.Experiments
+
+
+Experiment Providers
+--------------------
+
+.. toctree::
+   :titlesonly:
+
+   baseplate.experiments.providers.r2: Legacy, R2-style experiments <providers/r2>
+   baseplate.experiments.providers.feature_flag: Feature Flag experiments <providers/feature_flag>
+   baseplate.experiments.providers.forced_variant: Forced Variant experiment <providers/forced_variant>
