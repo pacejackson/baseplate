@@ -9,9 +9,9 @@ Experiment Providers
 .. toctree::
    :titlesonly:
 
-   baseplate.experiments.providers.r2: Legacy, R2-style experiments <providers/r2>
-   baseplate.experiments.providers.feature_flag: Feature Flag experiments <providers/feature_flag>
-   baseplate.experiments.providers.forced_variant: Forced Variant experiment <providers/forced_variant>
+   baseplate.experiments.providers.r2: Legacy, R2-style experiments <r2>
+   baseplate.experiments.providers.feature_flag: Feature Flag experiments <feature_flag>
+   baseplate.experiments.providers.forced_variant: Forced Variant experiment <forced_variant>
 
 Configuration Parsing
 ---------------------

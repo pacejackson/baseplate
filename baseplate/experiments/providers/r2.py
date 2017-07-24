@@ -21,6 +21,35 @@ class R2Experiment(Experiment):
     that:
 
     effective_variant_size = max(variant_size, (1/num_variants) * 100)
+
+    The config dict is expected to have the following format:
+
+    {
+        "variants": Dict mapping variant names to their sizes. Variant sizes
+            are expressed as numeric percentages rather than a fraction of 1
+            (that is, 1.5 means 1.5%, not 150%).
+        "targeting": (Optional) Dict that maps the names of targeting
+            parameters to lists of valid values.  When determining the variant
+            of an experiment, the targeting parameters you want to use are
+            passed in as kwargs to the call to experiment.variant.
+        "overrides": (Optional) Dict that maps override parameters to dicts
+            mapping values to the variant name you want to override the variant
+            to. When determining the variant of an experiment, the override
+            parameters you want to use are passed in as kwargs to the call to
+            experiment.variant.
+        "bucket_val": (Optional) Name of the parameter you want to use for
+            bucketing.  This value must be passed to the call to
+            experiment.variant as a kwarg.  Defaults to "user_id".
+        "seed": (Optional) Overrides the seed for this experiment.  If this is
+            not set, `name` is used as the seed.
+        "newer_than": (Optional) The earliest time that a bucketing resource
+            can have been created by in UTC epoch seconds.  If set, you must
+            pass the time, in UTC epoch seconds, when the resource that you are
+            bucketing was created to the call to experiment.variant as the
+            "created" parameter. For example, if you are bucketing based on
+            user_id, created would be set to the time when a User account was
+            created or when an LoID cookie was generated.
+    }
     """
 
     def __init__(self, id, name, owner, variants, seed=None,
@@ -53,36 +82,6 @@ class R2Experiment(Experiment):
     @classmethod
     def from_dict(cls, id, name, owner, config):
         """Parse the config dict and return a new R2Experiment object.
-
-        The config dict is expected to have the following format:
-
-        {
-            "variants": Dict mapping variant names to their sizes. Variant
-                sizes are expressed as numeric percentages rather than a
-                fraction of 1 (that is, 1.5 means 1.5%, not 150%).
-            "targeting": (Optional) Dict that maps the names of targeting
-                parameters to lists of valid values.  When determining the
-                variant of an experiment, the targeting parameters you want to
-                use are passed in as kwargs to the call to experiment.variant.
-            "overrides": (Optional) Dict that maps override parameters to dicts
-                mapping values to the variant name you want to override the
-                variant to. When determining the variant of an experiment, the
-                override parameters you want to use are passed in as kwargs to
-                the call to experiment.variant.
-            "bucket_val": (Optional) Name of the parameter you want to use for
-                bucketing.  This value must be passed to the call to
-                experiment.variant as a kwarg.  Defaults to "user_id".
-            "seed": (Optional) Overrides the seed for this experiment.  If this
-                is not set, `name` is used as the seed.
-            "newer_than": (Optional) The earliest time that a bucketing
-                resource can have been created by in UTC epoch seconds.  If
-                set, you must pass the time, in UTC epoch seconds, when the
-                resource that you are bucketing was created to the call to
-                experiment.variant as the "created" parameter. For example, if
-                you are bucketing based on user_id, created would be set to the
-                time when a User account was created or when an LoID cookie was
-                generated.
-        }
 
         :param int id: The id of the experiment from the base config.
         :param str name: The name of the experiment from the base config.
