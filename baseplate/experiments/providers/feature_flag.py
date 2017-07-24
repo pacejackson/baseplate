@@ -16,5 +16,16 @@ class FeatureFlag(R2Experiment):
     2. Restricting a new feature to certain subreddits
     """
 
+    @classmethod
+    def from_dict(cls, id, name, owner, config):
+        variants = config.get("variants", {})
+        assert not set(variants.keys()) - {"active"}
+        return super(FeatureFlag, cls).from_dict(
+            id=id,
+            name=name,
+            owner=owner,
+            config=config,
+        )
+
     def should_log_bucketing(self):
         return False
