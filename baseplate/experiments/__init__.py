@@ -165,7 +165,7 @@ class Experiments(object):
                 child_span.log("error.object", exc)
 
 
-def experiments_client_from_config(app_config, event_queue=None):
+def experiments_client_from_config(app_config, event_queue):
     """Configure and return an :py:class:`ExperimentsContextFactory` object.
 
     This expects one configuration option:
@@ -177,8 +177,7 @@ def experiments_client_from_config(app_config, event_queue=None):
     :param dict raw_config: The application configuration which should have
         settings for the experiments client.
     :param baseplate.events.EventQueue event_queue: The EventQueue to be used
-        to log bucketing events.  If set to None, no bucketing events will be
-        logged.  Defaults to None.
+        to log bucketing events.
     :rtype: :py:class:`ExperimentsContextFactory`
 
     """

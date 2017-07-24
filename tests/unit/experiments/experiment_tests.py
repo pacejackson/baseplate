@@ -283,7 +283,8 @@ class TestExperiments(unittest.TestCase):
 
 class ExperimentsClientFromConfigTests(unittest.TestCase):
     def test_make_clients(self):
+        event_queue = mock.Mock(spec=EventQueue)
         experiments = experiments_client_from_config({
             "experiments.path": "/tmp/test",
-        })
+        }, event_queue)
         self.assertIsInstance(experiments, ExperimentsContextFactory)
