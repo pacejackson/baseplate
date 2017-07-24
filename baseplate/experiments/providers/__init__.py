@@ -4,13 +4,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import time
+
+from datetime import datetime
 
 from .feature_flag import FeatureFlag
 from .forced_variant import ForcedVariantExperiment
 from .r2 import R2Experiment
 
 logger = logging.getLogger(__name__)
+
+
+ISO_DATE_FMT = "%Y-%d-%m"
 
 
 def parse_experiment(config):
@@ -24,7 +28,9 @@ def parse_experiment(config):
             "name": String experiment name, should be unique for each
                 experiment.
             "owner": The group or individual that owns this experiment.
-            "expires": Date when this experiment expires as UTC epoch seconds.
+            "expires": Date when this experiment expires in ISO format
+                (YYYY-MM-DD).  The experiment will expire at 00:00 UTC on the
+                day after the specified date.
             "type": String specifying the type of experiment to run.  If this
                 value is not reconized, the experiment will be considered
                 disabled.
@@ -51,9 +57,10 @@ def parse_experiment(config):
     name = config["name"]
     owner = config.get("owner")
     experiment_config = config["experiment"]
-    expiration = config["expires"]
+    expiration = datetime.strptime(config["expires"], ISO_DATE_FMT).date()
+    today = datetime.utcnow().date()
 
-    if int(time.time()) > expiration:
+    if today > expiration:
         return ForcedVariantExperiment(None)
 
     enabled = config.get("enabled", True)

@@ -8,10 +8,12 @@ import collections
 import time
 import unittest
 
+from datetime import datetime, timedelta
+
 from baseplate._compat import range
 from baseplate.events import EventQueue
 from baseplate.experiments import Experiments
-from baseplate.experiments.providers import parse_experiment
+from baseplate.experiments.providers import ISO_DATE_FMT, parse_experiment
 from baseplate.file_watcher import FileWatcher
 
 from .... import mock
@@ -19,7 +21,7 @@ from .... import mock
 logger = logging.getLogger(__name__)
 
 
-THIRTY_DAYS_SEC = 60 * 60 * 24 * 30
+THIRTY_DAYS = timedelta(days=30)
 
 
 class TestFeatureFlag(unittest.TestCase):
@@ -45,7 +47,7 @@ class TestFeatureFlag(unittest.TestCase):
                 "id": 1,
                 "name": "test",
                 "type": "feature_flag",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "targeting": {
                         "logged_in": [True, False],
@@ -73,7 +75,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -101,7 +103,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -134,7 +136,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -162,7 +164,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -195,7 +197,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -223,7 +225,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -256,7 +258,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -284,7 +286,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -320,7 +322,7 @@ class TestFeatureFlag(unittest.TestCase):
                 "id": 1,
                 "name": "test_feature",
                 "type": "feature_flag",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "targeting": {
                         "logged_in": [True],
@@ -353,7 +355,7 @@ class TestFeatureFlag(unittest.TestCase):
                 "id": 1,
                 "name": "test_feature",
                 "type": "feature_flag",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "targeting": {
                         "logged_in": [False],
@@ -383,7 +385,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "url_features": {
@@ -412,7 +414,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "url_features": {
@@ -440,7 +442,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_name": {
@@ -483,7 +485,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_name": {},
@@ -503,7 +505,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_name": {
@@ -528,7 +530,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "subreddit": {
@@ -558,7 +560,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "subreddit": {},
@@ -578,7 +580,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "subreddit": {
@@ -603,7 +605,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "subdomain": {
@@ -633,7 +635,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "subdomain": {},
@@ -658,7 +660,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "subdomain": {
@@ -684,7 +686,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "global_override": None,
             "experiment": {
                 "overrides": {
@@ -709,7 +711,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "global_override": "active",
             "experiment": {
                 "overrides": {
@@ -738,7 +740,7 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "overrides": {
                     "user_groups": {
@@ -774,9 +776,9 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
-                "newer_than": int(time.time()) - THIRTY_DAYS_SEC,
+                "newer_than": int(time.time()) - THIRTY_DAYS.total_seconds(),
                 "variants": {
                     "active": 100,
                 },
@@ -798,9 +800,9 @@ class TestFeatureFlag(unittest.TestCase):
             "id": 1,
             "name": "test_feature",
             "type": "feature_flag",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
-                "newer_than": int(time.time()) + THIRTY_DAYS_SEC,
+                "newer_than": int(time.time()) + THIRTY_DAYS.total_seconds(),
                 "variants": {
                     "active": 100,
                 },

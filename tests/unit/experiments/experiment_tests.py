@@ -3,8 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import time
 import unittest
+
+from datetime import datetime, timedelta
 
 from baseplate.events import EventQueue
 from baseplate.experiments import (
@@ -12,11 +13,12 @@ from baseplate.experiments import (
     ExperimentsContextFactory,
     experiments_client_from_config,
 )
+from baseplate.experiments.providers import ISO_DATE_FMT
 from baseplate.file_watcher import FileWatcher, WatchedFileNotAvailableError
 
 from ... import mock
 
-THIRTY_DAYS_SEC = 60 * 60 * 24 * 30
+THIRTY_DAYS = timedelta(days=30)
 
 
 class TestExperiments(unittest.TestCase):
@@ -35,7 +37,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "id": 1,
                     "name": "test",
@@ -67,7 +69,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "variants": {
                         "active": 10,
@@ -102,7 +104,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "variants": {
                         "active": 10,
@@ -136,7 +138,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "variants": {
                         "active": 10,
@@ -165,7 +167,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "variants": {
                         "active": 10,
@@ -218,7 +220,7 @@ class TestExperiments(unittest.TestCase):
                 "name": "test",
                 "owner": "test",
                 "type": "r2",
-                "expires": int(time.time()) + THIRTY_DAYS_SEC,
+                "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
                 "experiment": {
                     "variants": {
                         "active": 10,

@@ -3,13 +3,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import time
 import unittest
 
-from baseplate.experiments.providers import parse_experiment
+from datetime import datetime, timedelta
+
+from baseplate.experiments.providers import ISO_DATE_FMT, parse_experiment
 from baseplate.experiments.providers.forced_variant import ForcedVariantExperiment
 
-THIRTY_DAYS_SEC = 60 * 60 * 24 * 30
+THIRTY_DAYS = timedelta(days=30)
 
 
 class TestForcedVariantExperiment(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "unknown",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "experiment": {
                 "id": 1,
                 "name": "test",
@@ -41,7 +42,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "r2",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "global_override": "foo",
             "experiment": {
                 "id": 1,
@@ -61,7 +62,7 @@ class TestForcedVariantExperiment(unittest.TestCase):
             "name": "test",
             "owner": "test",
             "type": "r2",
-            "expires": int(time.time()) + THIRTY_DAYS_SEC,
+            "expires": (datetime.utcnow() + THIRTY_DAYS).strftime(ISO_DATE_FMT),
             "enabled": False,
             "experiment": {
                 "id": 1,
