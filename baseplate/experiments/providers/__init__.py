@@ -30,9 +30,10 @@ def parse_experiment(config):
             "owner": The group or individual that owns this experiment.
             "expires": Date when this experiment expires in ISO format
                 (YYYY-MM-DD).  The experiment will expire at 00:00 UTC on the
-                day after the specified date.
+                day after the specified date.  Once an experiment is expired,
+                it is considered disabled.
             "type": String specifying the type of experiment to run.  If this
-                value is not reconized, the experiment will be considered
+                value is not recognized, the experiment will be considered
                 disabled.
             "experiment": The experiment config dict for the specific type of
                 experiment.  The format of this is determined by the specific
