@@ -8,12 +8,14 @@ class Experiment(object):
     """Base interface for experiment objects. """
 
     def bucketing_event_id(self, **kwargs):
-        """Key used to track if a bucketing event has been fired for the
-        current experiment.  Returns None by default.  If None is returned,
-        we will not mark that a bucketing event has been logged even if we do
-        log a bucketing event.  The kwargs should be the same values passed to
-        the call to Experiment.variant.  If your experiment does log bucketing
-        events, you must implement this function.
+        """Unique ID for bucketing events.
+
+        Used to determine if a bucketing ivent has alread been fired for a
+        given experiment and bucketing value pair.  Returns None by default.
+        If None is returned, we will not mark that a bucketing event has been
+        logged even if we do log a bucketing event. The kwargs should be the
+        same values passed to the call to Experiment.variant.  If your
+        experiment does log bucketing events, you must implement this function.
 
         :rtype: :py:class:`str` or None
         """
