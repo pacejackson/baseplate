@@ -59,9 +59,8 @@ def parse_experiment(config):
     owner = config.get("owner")
     experiment_config = config["experiment"]
     expiration = datetime.strptime(config["expires"], ISO_DATE_FMT).date()
-    today = datetime.utcnow().date()
 
-    if today > expiration:
+    if datetime.utcnow().date() > expiration:
         return ForcedVariantExperiment(None)
 
     enabled = config.get("enabled", True)
