@@ -12,7 +12,8 @@ import requests
 from . import MAX_EVENT_SIZE, MAX_QUEUE_SIZE
 from .. import config, make_metrics_client
 from .. _compat import configparser, BytesIO
-from .. message_queue import MessageQueue, TimedOutError
+from .. message_queue import message_queue_from_config
+from .. message_queue.base import TimedOutError
 
 
 logger = logging.getLogger(__name__)
@@ -247,11 +248,7 @@ def publish_events():
 
     metrics_client = make_metrics_client(raw_config)
 
-    event_queue = MessageQueue(
-        "/events-" + args.queue_name,
-        max_messages=MAX_QUEUE_SIZE,
-        max_message_size=MAX_EVENT_SIZE,
-    )
+    event_queue = message_queue_from_config(app_config, name=args.queue_name)
 
     # pylint: disable=maybe-no-member
     serializer = SERIALIZER_BY_VERSION[cfg.collector.version]()
