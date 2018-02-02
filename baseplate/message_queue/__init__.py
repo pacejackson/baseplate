@@ -14,7 +14,10 @@ def message_queue_from_config(app_config, prefix="message_queue.", name=None):
     cfg = config.parse_config(app_config, {
         config_prefix: {
             "name": config.Optional(config.String, default=None),
-            "type": config.OneOf(posix="posix", redis="redis"),
+            "type": config.Optional(
+                config.OneOf(posix="posix", redis="redis"),
+                default="posix",
+            ),
         },
     })
     options = getattr(cfg, config_prefix)
