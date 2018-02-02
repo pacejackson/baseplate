@@ -182,12 +182,16 @@ class EventQueue(ContextFactory):
 
     """
 
-    def __init__(self, name, event_serializer=serialize_v1_event):
-        self.queue = MessageQueue(
-            "/events-" + name,
-            max_messages=MAX_QUEUE_SIZE,
-            max_message_size=MAX_EVENT_SIZE,
-        )
+    def __init__(self, name, event_serializer=serialize_v1_event,
+                 message_queue=None):
+        if message_queue is None:
+            self.queue = MessageQueue(
+                "/events-" + name,
+                max_messages=MAX_QUEUE_SIZE,
+                max_message_size=MAX_EVENT_SIZE,
+            )
+        else:
+            self.queue = message_queue
         self.serialize_event = event_serializer
 
     def put(self, event):
