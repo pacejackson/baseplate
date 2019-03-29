@@ -62,7 +62,7 @@ def _metric_join(*nodes):
     return b".".join(node.strip(b".") for node in nodes)
 
 
-class ReportingLevel(Enum):
+class Level(Enum):
     CRITICAL = 0
     INFO = 1
     DETAILED = 2
@@ -112,7 +112,7 @@ class BufferedTransport(object):
 
 
 class BaseClient(object):
-    def __init__(self, transport, namespace, level=ReportingLevel.INFO):
+    def __init__(self, transport, namespace, level=Level.INFO):
         self.transport = transport
         self.namespace = namespace.encode("ascii")
         self.level = level
@@ -123,7 +123,7 @@ class BaseClient(object):
             return self.transport
         return self.fallback_transport
 
-    def timer(self, name, level=ReportingLevel.INFO):
+    def timer(self, name, level=Level.INFO):
         """Return a Timer with the given name.
 
         :param str name: The name the timer should have.
@@ -134,7 +134,7 @@ class BaseClient(object):
         timer_name = _metric_join(self.namespace, name.encode("ascii"))
         return Timer(self._choose_transport(level), timer_name)
 
-    def counter(self, name, level=ReportingLevel.INFO):
+    def counter(self, name, level=Level.INFO):
         """Return a Counter with the given name.
 
         The sample rate is currently up to your application to enforce.
@@ -147,7 +147,7 @@ class BaseClient(object):
         counter_name = _metric_join(self.namespace, name.encode("ascii"))
         return Counter(self._choose_transport(level), counter_name)
 
-    def gauge(self, name, level=ReportingLevel.INFO):
+    def gauge(self, name, level=Level.INFO):
         """Return a Gauge with the given name.
 
         :param str name: The name the gauge should have.
@@ -158,7 +158,7 @@ class BaseClient(object):
         gauge_name = _metric_join(self.namespace, name.encode("ascii"))
         return Gauge(self._choose_transport(level), gauge_name)
 
-    def histogram(self, name, level=ReportingLevel.INFO):
+    def histogram(self, name, level=Level.INFO):
         """Return a Histogram with the given name.
 
         :param str name: The name the histogram should have.
@@ -214,7 +214,7 @@ class Batch(BaseClient):
             counter.send()
         self.transport.flush()
 
-    def counter(self, name, level=ReportingLevel.INFO):
+    def counter(self, name, level=Level.INFO):
         """Return a BatchCounter with the given name.
 
         The sample rate is currently up to your application to enforce.
