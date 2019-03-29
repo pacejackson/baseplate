@@ -107,8 +107,15 @@ class BaseClient(object):
     def __init__(self, transport, namespace):
         self.transport = transport
         self.namespace = namespace.encode("ascii")
+        self.level = 0
+        self._fallback_transport = NullTransport()
 
-    def timer(self, name):
+    def _choose_transport(self, level):
+        if level <= self.level:
+            return self.transport
+        return self._fallback_transport
+
+    def timer(self, name, level=0):
         """Return a Timer with the given name.
 
         :param str name: The name the timer should have.
@@ -117,9 +124,9 @@ class BaseClient(object):
 
         """
         timer_name = _metric_join(self.namespace, name.encode("ascii"))
-        return Timer(self.transport, timer_name)
+        return Timer(self._choose_transport(level), timer_name)
 
-    def counter(self, name):
+    def counter(self, name, level=0):
         """Return a Counter with the given name.
 
         The sample rate is currently up to your application to enforce.
@@ -130,9 +137,9 @@ class BaseClient(object):
 
         """
         counter_name = _metric_join(self.namespace, name.encode("ascii"))
-        return Counter(self.transport, counter_name)
+        return Counter(self._choose_transport(level), counter_name)
 
-    def gauge(self, name):
+    def gauge(self, name, level=0):
         """Return a Gauge with the given name.
 
         :param str name: The name the gauge should have.
@@ -141,9 +148,9 @@ class BaseClient(object):
 
         """
         gauge_name = _metric_join(self.namespace, name.encode("ascii"))
-        return Gauge(self.transport, gauge_name)
+        return Gauge(self._choose_transport(level), gauge_name)
 
-    def histogram(self, name):
+    def histogram(self, name, level=0):
         """Return a Histogram with the given name.
 
         :param str name: The name the histogram should have.
@@ -152,7 +159,7 @@ class BaseClient(object):
 
         """
         histogram_name = _metric_join(self.namespace, name.encode("ascii"))
-        return Histogram(self.transport, histogram_name)
+        return Histogram(self._choose_transport(level), histogram_name)
 
 
 class Client(BaseClient):
@@ -184,8 +191,7 @@ class Batch(BaseClient):
 
     # pylint: disable=super-init-not-called
     def __init__(self, transport, namespace):
-        self.transport = BufferedTransport(transport)
-        self.namespace = namespace
+        super(Batch, self).__init__(BufferedTransport(transport), namespace)
         self.counters = {}
 
     def __enter__(self):
@@ -200,7 +206,7 @@ class Batch(BaseClient):
             counter.send()
         self.transport.flush()
 
-    def counter(self, name):
+    def counter(self, name, level=0):
         """Return a BatchCounter with the given name.
 
         The sample rate is currently up to your application to enforce.
@@ -213,7 +219,7 @@ class Batch(BaseClient):
         counter_name = _metric_join(self.namespace, name.encode("ascii"))
         batch_counter = self.counters.get(counter_name)
         if batch_counter is None:
-            batch_counter = BatchCounter(self.transport, counter_name)
+            batch_counter = BatchCounter(self._choose_transport(level), counter_name)
             self.counters[counter_name] = batch_counter
 
         return batch_counter
