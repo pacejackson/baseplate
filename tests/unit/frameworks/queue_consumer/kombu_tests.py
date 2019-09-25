@@ -16,15 +16,7 @@ from baseplate.frameworks.queue_consumer.kombu import KombuConsumerWorker
 from baseplate.frameworks.queue_consumer.kombu import KombuMessageHandler
 from baseplate.frameworks.queue_consumer.kombu import KombuQueueConsumerFactory
 
-try:
-    # nullcontext is only available in Python 3.7+
-    from contextlib import nullcontext as does_not_raise
-except ImportError:
-    from contextlib import contextmanager
-
-    @contextmanager
-    def does_not_raise():
-        yield
+from ... import does_not_raise
 
 
 @pytest.fixture

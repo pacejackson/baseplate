@@ -71,7 +71,7 @@ class KombuConsumerWorker(ConsumerMixin, PumpWorker):
     def get_consumers(self, Consumer: kombu.Consumer, channel: Channel) -> Sequence[kombu.Consumer]:
         args = dict(queues=self.queues, on_message=self.work_queue.put)
         if self.serializer:
-            args["accept"] = self.serializer.name
+            args["accept"] = [self.serializer.name]
         return [Consumer(**args)]
 
     def stop(self) -> None:

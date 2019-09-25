@@ -189,6 +189,7 @@ class QueueConsumerServer:
                 try:
                     return fn(*a, **kw)
                 except Exception:
+                    logger.exception("Unhandled error in pump or handler thread, terminating.")
                     self._terminate()
 
             return _run_and_terminate
