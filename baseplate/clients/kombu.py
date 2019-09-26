@@ -135,6 +135,13 @@ class KombuThriftSerializer(KombuSerializer[T]):  # pylint: disable=unsubscripta
 
 
 def register_serializer(serializer: KombuSerializer) -> None:
+    """Register `serializer` with the Kombu serialization registry.
+
+    The serializer will be registered using `serializer.name` and will be sent
+    to the message broker with the header "application/x-{serializer.name}".
+    You need to call `register_serializer` before you can use a serializer for
+    automatic serialization when publishing and deserializing when consuming.
+    """
     kombu.serialization.register(
         serializer.name,
         serializer.serialize,
