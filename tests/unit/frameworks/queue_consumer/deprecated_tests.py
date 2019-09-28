@@ -10,7 +10,7 @@ except ImportError:
 else:
     del kombu
 
-from baseplate.frameworks.queue_consumer._depr import BaseKombuConsumer
+from baseplate.frameworks.queue_consumer.deprecated import BaseKombuConsumer
 
 
 class BaseKombuConsumerTests(unittest.TestCase):
@@ -28,7 +28,7 @@ class BaseKombuConsumerTests(unittest.TestCase):
         self.assertEqual(ret, message)
         work_queue.get.assert_called_once_with(block=True, timeout=None)
 
-    @mock.patch("baseplate.frameworks.queue_consumer._depr.RetryPolicy")
+    @mock.patch("baseplate.frameworks.queue_consumer.deprecated.RetryPolicy")
     def test_get_batch(self, RetryPolicy):
         m1 = mock.Mock()
         m2 = mock.Mock()
@@ -57,13 +57,13 @@ class BaseKombuConsumerTests(unittest.TestCase):
         self.assertEqual(work_queue.get.call_count, 4)
 
     # Mock out threading.Thread so we don't actually start up phantom worker threads.
-    @mock.patch("baseplate.frameworks.queue_consumer._depr.Thread")
+    @mock.patch("baseplate.frameworks.queue_consumer.deprecated.Thread")
     def test_queue_size(self, _):
         consumer = BaseKombuConsumer.new(mock.Mock(), mock.Mock(), queue_size=10)
         self.assertEqual(consumer.worker.work_queue.maxsize, 10)
 
     # Mock out threading.Thread so we don't actually start up phantom worker threads.
-    @mock.patch("baseplate.frameworks.queue_consumer._depr.Thread")
+    @mock.patch("baseplate.frameworks.queue_consumer.deprecated.Thread")
     def test_default_queue_size_gt_zero(self, _):
         # We don't really care to test the exact default queue size, just that
         # it is greater than zero (which is infinite/unbounded).
