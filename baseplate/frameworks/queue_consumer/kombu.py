@@ -28,7 +28,6 @@ if TYPE_CHECKING:
 else:
     WorkQueue = queue.Queue
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -114,6 +113,15 @@ class KombuMessageHandler(MessageHandler):
 
 
 class KombuQueueConsumerFactory(QueueConsumerFactory):
+    """Factory for running a :py:class:`~baseplate.server.queue_consumer.QueueConsumerServer` using Kombu.
+
+    For simple cases where you just need a basic queue with all the default
+    parameters for your message broker, you can use `KombuQueueConsumerFactory.new`.
+
+    If you need more control, you can create the :py:class:`~kombu.Queue` s yourself and
+    use the constructor directly.
+    """
+
     def __init__(
         self,
         baseplate: Baseplate,
@@ -124,6 +132,22 @@ class KombuQueueConsumerFactory(QueueConsumerFactory):
         health_check_fn: Optional[HealthcheckCallback] = None,
         serializer: Optional[KombuSerializer] = None,
     ):
+        """`KombuQueueConsumerFactory` constructor.
+
+        :param baseplate: The Baseplate set up for your consumer.
+        :param exchange: The `kombu.Exchange` that you will bind your :py:class:`~kombu.Queue` s
+            to.
+        :param queues: List of  :py:class:`~kombu.Queue` s to consume from.
+        :param queue_name: Name for your queue.
+        :param routing_keys: List of routing keys that you will create :py:class:`~kombu.Queue` s
+            to consume from.
+        :param handler_fn: A `baseplate.frameworks.queue_consumer.komub.Handler`
+            function that will process an individual message from a queue.
+        :param health_check_fn: A `baseplate.server.queue_consumer.HealthcheckCallback`
+            function that can be used to customize your health check.
+        :param serializer: A `baseplate.clients.kombu.KombuSerializer` that should
+            be used to decode the messages you are consuming.
+        """
         self.baseplate = baseplate
         self.connection = connection
         self.queues = queues
@@ -144,6 +168,26 @@ class KombuQueueConsumerFactory(QueueConsumerFactory):
         health_check_fn: Optional[HealthcheckCallback] = None,
         serializer: Optional[KombuSerializer] = None,
     ) -> "KombuQueueConsumerFactory":
+        """Return a new `KombuQueueConsumerFactory`.
+
+        This method will create the :py:class:`~kombu.Queue` s for you and is
+        appropriate to use in simple cases where you just need a basic queue with
+        all the default parameters for your message broker.
+
+        :param baseplate: The Baseplate set up for your consumer.
+        :param exchange: The `kombu.Exchange` that you will bind your
+            :py:class:`~kombu.Queue` s to.
+        :param exchange: The `kombu.Connection` to your message broker.
+        :param queue_name: Name for your queue.
+        :param routing_keys: List of routing keys that you will create
+            :py:class:`~kombu.Queue` s to consume from.
+        :param handler_fn: A `baseplate.frameworks.queue_consumer.komub.Handler`
+            function that will process an individual message from a queue.
+        :param health_check_fn: A `baseplate.server.queue_consumer.HealthcheckCallback`
+            function that can be used to customize your health check.
+        :param serializer: A `baseplate.clients.kombu.KombuSerializer` that should
+            be used to decode the messages you are consuming.
+        """
         queues = []
         for routing_key in routing_keys:
             queues.append(kombu.Queue(name=queue_name, exchange=exchange, routing_key=routing_key))
