@@ -16,7 +16,7 @@ from baseplate.frameworks.queue_consumer.kombu import KombuConsumerWorker
 from baseplate.frameworks.queue_consumer.kombu import KombuMessageHandler
 from baseplate.frameworks.queue_consumer.kombu import KombuQueueConsumerFactory
 
-from ... import does_not_raise
+from .... import does_not_raise
 
 
 @pytest.fixture
