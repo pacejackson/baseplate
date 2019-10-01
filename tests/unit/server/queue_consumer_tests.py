@@ -1,3 +1,4 @@
+import datetime
 import itertools
 import os
 import socket
@@ -143,6 +144,7 @@ class TestQueueConsumerServer:
                 ),
                 max_concurrency=max_concurrency,
                 listener=mock.Mock(spec=socket.socket),
+                stop_timeout=datetime.timedelta(seconds=30),
             )
             return server[0]
 
@@ -164,6 +166,7 @@ class TestQueueConsumerServer:
             consumer_factory=FakeQueueConsumerFactory(),
             max_concurrency=max_concurrency,
             listener=mock.Mock(spec=socket.socket),
+            stop_timeout=datetime.timedelta(seconds=30),
         )
         assert not server.started
         assert not server.stopped

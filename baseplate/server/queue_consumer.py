@@ -1,4 +1,5 @@
 import abc
+import datetime
 import logging
 import os
 import queue
@@ -19,6 +20,8 @@ from gevent.pywsgi import WSGIServer
 from gevent.server import StreamServer
 
 import baseplate.lib.config
+
+from baseplate.lib.retry import RetryPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -172,11 +175,16 @@ class QueueConsumerServer:
     """Server for running long-lived queue consumers."""
 
     def __init__(
-        self, pump: PumpWorker, handlers: Sequence[QueueConsumer], healthcheck_server: StreamServer
+        self,
+        pump: PumpWorker,
+        handlers: Sequence[QueueConsumer],
+        healthcheck_server: StreamServer,
+        stop_timeout: datetime.timedelta,
     ):
         self.pump = pump
         self.handlers = handlers
         self.healthcheck_server = healthcheck_server
+        self.stop_timeout = stop_timeout
 
         def watcher(fn: Callable) -> Callable:
             """Terminates the server (gracefully) if `fn` raises an Exception.
@@ -201,7 +209,11 @@ class QueueConsumerServer:
 
     @classmethod
     def new(
-        cls, max_concurrency: int, consumer_factory: QueueConsumerFactory, listener: socket.socket
+        cls,
+        max_concurrency: int,
+        consumer_factory: QueueConsumerFactory,
+        listener: socket.socket,
+        stop_timeout: datetime.timedelta,
     ) -> "QueueConsumerServer":
         """Build a new QueueConsumerServer."""
         # We want to give some headroom on the queue so our handlers can grab
@@ -219,6 +231,7 @@ class QueueConsumerServer:
             pump=consumer_factory.build_pump_worker(work_queue),
             handlers=handlers,
             healthcheck_server=consumer_factory.build_health_checker(listener),
+            stop_timeout=stop_timeout,
         )
 
     def _terminate(self) -> None:
@@ -272,9 +285,10 @@ class QueueConsumerServer:
         logger.debug("Stopping message handler threads.")
         for handler in self.handlers:
             handler.stop()
+        retry_policy = RetryPolicy.new(budget=self.stop_timeout.total_seconds())
         logger.debug("Waiting for message handler threads to drain.")
-        for thread in self.threads:
-            thread.join()
+        for time_remaining, thread in zip(retry_policy, self.threads):
+            thread.join(timeout=time_remaining)
         # Stop the healthcheck server last
         logger.debug("Stopping healthcheck server.")
         self.healthcheck_server.stop()
@@ -291,8 +305,17 @@ def make_server(
     max_concurrency to 1.
     """
     cfg = baseplate.lib.config.parse_config(
-        server_config, {"max_concurrency": baseplate.lib.config.Integer}
+        server_config,
+        {
+            "max_concurrency": baseplate.lib.config.Integer,
+            "stop_timeout": baseplate.config.Optional(
+                baseplate.config.Timespan, default=datetime.timedelta(seconds=30)
+            ),
+        },
     )
     return QueueConsumerServer.new(
-        consumer_factory=app, max_concurrency=cfg.max_concurrency, listener=listener
+        consumer_factory=app,
+        max_concurrency=cfg.max_concurrency,
+        listener=listener,
+        stop_timeout=cfg.stop_timeout,
     )
