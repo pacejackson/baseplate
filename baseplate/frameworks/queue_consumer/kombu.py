@@ -2,6 +2,7 @@ import logging
 import queue
 import socket
 
+from typing import Any
 from typing import Callable
 from typing import Optional
 from typing import Sequence
@@ -31,7 +32,7 @@ else:
 logger = logging.getLogger(__name__)
 
 
-Handler = Callable[[RequestContext, kombu.Message], None]
+Handler = Callable[[RequestContext, Any, kombu.Message], None]
 
 
 class FatalMessageHandlerError(Exception):
@@ -98,7 +99,7 @@ class KombuMessageHandler(MessageHandler):
                 span.set_tag("amqp.consumer_tag", delivery_info.get("consumer_tag", ""))
                 span.set_tag("amqp.delivery_tag", delivery_info.get("delivery_tag", ""))
                 span.set_tag("amqp.exchange", delivery_info.get("exchange", ""))
-                self.handler_fn(context, message)
+                self.handler_fn(context, message.decode(), message)
         except Exception as exc:
             logger.exception(
                 "Unhandled error while trying to process a message.  The message "

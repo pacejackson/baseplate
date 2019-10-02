@@ -56,6 +56,7 @@ class TestKombuMessageHandler:
             "delivery_tag": "delivery-tag",
             "exchange": "exchange",
         }
+        msg.decode.return_value = {"foo": "bar"}
         return msg
 
     def test_handle(self, context, span, baseplate, name, message):
@@ -75,7 +76,7 @@ class TestKombuMessageHandler:
             ],
             any_order=True,
         )
-        handler_fn.assert_called_once_with(context, message)
+        handler_fn.assert_called_once_with(context, message.decode(), message)
         message.ack.assert_called_once()
 
     @pytest.mark.parametrize(
@@ -86,7 +87,7 @@ class TestKombuMessageHandler:
         ],
     )
     def test_errors(self, err, expectation, baseplate, name, message):
-        def handler_fn(ctx, msg):
+        def handler_fn(ctx, body, msg):
             raise err
 
         handler = KombuMessageHandler(baseplate, name, handler_fn)
@@ -120,7 +121,7 @@ class TestQueueConsumerFactory:
                 connection=connection,
                 queue_name=name,
                 routing_keys=routing_keys,
-                handler_fn=lambda ctx, msg: True,
+                handler_fn=lambda ctx, body, msg: True,
                 health_check_fn=health_check_fn,
             )
 
