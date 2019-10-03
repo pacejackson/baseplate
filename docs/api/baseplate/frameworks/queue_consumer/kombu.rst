@@ -22,13 +22,13 @@ An abbreviated example of it in use::
 
     def make_consumer_factory(app_config):
         baseplate = Baseplate()
-        exchange = Exchange("reddit_exchange", "direct"),
+        exchange = Exchange("reddit_exchange", "direct")
         connection = Connection(
           hostname="amqp://guest:guest@reddit.local:5672",
           virtual_host="/",
-        ),
-        queue_name = "process_links_q",
-        routing_keys = ["link_created"],
+        )
+        queue_name = "process_links_q"
+        routing_keys = ["link_created"]
         return KombuQueueConsumerFactory.new(
             baseplate=baseplate,
             exchange=exchange,

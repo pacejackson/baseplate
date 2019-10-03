@@ -76,12 +76,12 @@ as you did for this.
     +
     + def make_consumer_factory(app_config):
     +     baseplate = Baseplate()
-    +     exchange = Exchange('reddit_exchange', 'direct'),
+    +     exchange = Exchange('reddit_exchange', 'direct')
     +     connection = Connection(
     +       hostname='amqp://guest:guest@reddit.local:5672',
     +       virtual_host='/',
-    +     ),
-    +     queue_name = 'process_links_q',
+    +     )
+    +     queue_name = 'process_links_q'
     +     routing_keys = ['link_created', 'link_deleted', 'link_updated']
     +     return KombuQueueConsumerFactory.new(
     +         baseplate=baseplate,
@@ -111,8 +111,8 @@ To create a long-running process to consume from a queue::
             baseplate=make_baseplate(cfg, app_config),
             exchange=Exchange('reddit_exchange', 'direct'),
             connection=Connection(
-            hostname='amqp://guest:guest@reddit.local:5672',
-            virtual_host='/',
+                hostname='amqp://guest:guest@reddit.local:5672',
+                virtual_host='/',
             ),
             queue_name='process_links_q',
             routing_keys=[
