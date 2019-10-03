@@ -1,7 +1,7 @@
 ``baseplate.frameworks.queue_consumer.deprecated``
 ==================================================
 
-.. warning::
+.. deprecated:: 1.1
     This way of creating a Baseplate queue consumer is deprecated in favor of
     using a `QueueConsumerServer` and will be removed in the next major release.
     Instructions for ugrading are included below.

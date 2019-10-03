@@ -5,11 +5,19 @@
 
 This module provides a :py:class:`~baseplate.server.queue_consumer.QueueConsumerFactory`
 that allows you to run a :py:class:`~baseplate.server.queue_consumer.QueueConsumerServer`
-using Kombu that also integrates Baseplate's facilities into Kombu's message lifecycle.
+that integrates Baseplate's facilities with Kombu.
 
 An abbreviated example of it in use::
 
-    def process_links(context, body, message):
+    import kombu
+    from baseplate import RequestContext
+    from typing import Any
+
+    def process_links(
+        context: RequestContext,
+        body: Any,
+        message: kombu.Message,
+    ):
         print(f"processing {body}")
 
     def make_consumer_factory(app_config):

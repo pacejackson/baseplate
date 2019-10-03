@@ -72,7 +72,8 @@ def consume(
     warn_deprecated(
         "baseplate.frameworks.queue_consumer is deprecated and will be removed "
         "in the next major release.  You should migrate your consumers to use "
-        "baseplate.server.queue_consumer."
+        "baseplate.server.queue_consumer.\n"
+        "https://baseplate.readthedocs.io/en/stable/api/baseplate/frameworks/queue_consumer/deprecated.html"
     )
     queues = []
     for routing_key in routing_keys:

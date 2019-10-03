@@ -13,4 +13,4 @@ lifecycle for each unit of work the framework processes (requests or messages).
 
    baseplate.frameworks.thrift: Thrift RPC <thrift>
    baseplate.frameworks.pyramid: Pyramid Web Framework <pyramid>
-   baseplate.frameworks.queue_consumer.index: Kombu Queue Consumer <queue_consumer/index>
+   baseplate.frameworks.queue_consumer: Kombu Queue Consumer <queue_consumer/index>

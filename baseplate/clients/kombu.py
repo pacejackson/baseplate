@@ -116,10 +116,10 @@ class KombuThriftSerializer(KombuSerializer[T]):  # pylint: disable=unsubscripta
     def __init__(
         self,
         thrift_class: Type[T],
-        factory_class: TProtocolFactory = TBinaryProtocolAcceleratedFactory,
+        protocol_factory: TProtocolFactory = TBinaryProtocolAcceleratedFactory(),
     ):
         self.thrift_class = thrift_class
-        self.factory = factory_class()
+        self.factory = protocol_factory
 
     @property
     def name(self) -> str:
